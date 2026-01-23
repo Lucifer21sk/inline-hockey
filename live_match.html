@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Match</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Shared global style -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="match-container">
+
+  <!-- HOME -->
+  <div class="team-panel">
+    <img src="home.jpg" class="team-logo">
+    <h2>DOMÁCI</h2>
+
+    <div class="team-actions">
+      <button class="goal-btn" onclick="openGoal('home')">Gól</button>
+      <button class="penalty-btn" onclick="openPenalty('home')">Trest</button>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center-panel">
+    <div class="scoreboard">
+      <span id="homeScore">0</span>
+      :
+      <span id="awayScore">0</span>
+    </div>
+  </div>
+
+  <!-- AWAY -->
+  <div class="team-panel">
+    <img src="away.jpg" class="team-logo">
+    <h2>HOSTIA</h2>
+
+    <div class="team-actions">
+      <button class="goal-btn" onclick="openGoal('away')">Gól</button>
+      <button class="penalty-btn" onclick="openPenalty('away')">Trest</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- END MATCH BUTTON -->
+ <button class="action-btn end-match-btn" onclick="endMatch()">
+  Koniec zápasu
+</button>
+
+<!-- ===== GOAL MODAL ===== -->
+<div id="goalModal" class="modal">
+  <div class="modal-box">
+    <h3>GÓL</h3>
+
+    <input id="goalTime" placeholder="Čas (mm:ss)" inputmode="numeric">
+    <input placeholder="Strelec – číslo" id="goalScorer" inputmode="numeric" pattern="[0-9]*">
+    <input placeholder="Asistencia 1" id="goalAssist1" inputmode="numeric" pattern="[0-9]*">
+    <input placeholder="Asistencia 2" id="goalAssist2" inputmode="numeric" pattern="[0-9]*">
+
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Zrušiť</button>
+      <button class="modal-confirm" onclick="confirmGoal()">✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PENALTY MODAL ===== -->
+<div id="penaltyModal" class="modal">
+  <div class="modal-box">
+    <h3>TREST</h3>
+
+    <input id="penaltyTime" placeholder="Čas (mm:ss)" inputmode="numeric">
+    <input placeholder="Hráč – číslo" id="penaltyPlayer" inputmode="numeric" pattern="[0-9]*">
+
+    <select id="penaltyType">
+      <option>2 min</option>
+      <option>2 + 2</option>
+      <option>10 min</option>
+      <option>Do konca zápasu</option>
+    </select>
+
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Zrušiť</button>
+      <button class="modal-confirm" onclick="confirmPenalty()">✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let homeScore = 0;
+  let awayScore = 0;
+  let activeTeam = null;
+
+  const goalModal = document.getElementById("goalModal");
+  const penaltyModal = document.getElementById("penaltyModal");
+
+  function openGoal(team) {
+    activeTeam = team;
+    goalModal.classList.add("active");
+  }
+
+  function openPenalty(team) {
+    activeTeam = team;
+    penaltyModal.classList.add("active");
+  }
+
+  function closeModal() {
+    goalModal.classList.remove("active");
+    penaltyModal.classList.remove("active");
+  }
+
+  function setupTimeInput(id) {
+  const input = document.getElementById(id);
+
+  input.addEventListener("input", () => {
+    let digits = input.value.replace(/\D/g, "").slice(0, 4);
+
+    if (digits.length >= 3) {
+      input.value = digits.slice(0, 2) + ":" + digits.slice(2);
+    } else {
+      input.value = digits;
+    }
+  });
+}
+
+setupTimeInput("goalTime");
+setupTimeInput("penaltyTime");
+
+
+  function confirmGoal() {
+    if (activeTeam === "home") {
+      homeScore++;
+      document.getElementById("homeScore").textContent = homeScore;
+    } else {
+      awayScore++;
+      document.getElementById("awayScore").textContent = awayScore;
+    }
+    closeModal();
+  }
+
+  function confirmPenalty() {
+    // later: store penalty info
+    closeModal();
+  }
+
+  function endMatch() {
+    window.location.href = "post_match.html";
+}
+
+
+</script>
+
+</body>
+</html>

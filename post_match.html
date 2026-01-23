@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Koniec zápasu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="post-container">
+
+  <h1 class="post-title">Koniec zápasu</h1>
+
+  <div class="post-form">
+
+    <div class="form-group">
+      <label>Rozhodca</label>
+      <input type="text">
+    </div>
+
+    <div class="form-group">
+      <label>Lekár</label>
+      <input type="text">
+    </div>
+
+    <div class="form-group">
+      <label>Poznámky</label>
+      <textarea></textarea>
+    </div>
+
+    <button class="post-save-btn" onclick="finishApp()">
+      Uložiť
+    </button>
+
+  </div>
+
+</div>
+
+<script>
+  function finishApp() {
+    //window.location.href = "select_teams.html";
+    window.close();  // May not work in all browsers
+  }
+</script>
+
+</body>
+
+</html>

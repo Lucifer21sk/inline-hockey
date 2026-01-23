@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inline Hokej Zápas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="teams">
+    <div class="team">
+      <h2>DOMÁCI</h2>
+      <select id="homeTeam">
+        <option value="">Vybrať tím</option>
+        <option>Team A</option>
+        <option>Team B</option>
+        <option>Team C</option>
+      </select>
+    </div>
+
+    <div class="team">
+      <h2>HOSTIA</h2>
+      <select id="awayTeam">
+        <option value="">Vybrať tím</option>
+        <option>Team D</option>
+        <option>Team E</option>
+        <option>Team F</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="start">
+    <button id="startBtn" class="action-btn" disabled>✓</button>
+  </div>
+
+  <script>
+    const home = document.getElementById("homeTeam");
+    const away = document.getElementById("awayTeam");
+    const btn = document.getElementById("startBtn");
+
+    function checkReady() {
+      btn.disabled = !(home.value && away.value && home.value !== away.value);
+    }
+
+    home.addEventListener("change", checkReady);
+    away.addEventListener("change", checkReady);
+
+    btn.addEventListener("click", () => {
+      const url =
+        `attendance_home.html?home=${encodeURIComponent(home.value)}&away=${encodeURIComponent(away.value)}`;
+      window.location.href = url;
+    });
+  </script>
+
+</body>
+</html>

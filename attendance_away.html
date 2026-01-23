@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hosťujúci Tím</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>Hosťujúci Tím : Dochádzka hráčov</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>TU</th>
+      <th>Meno</th>
+      <th>Číslo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><input type="checkbox" class="player"></td>
+      <td>John Novak</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <td><input type="checkbox" class="player"></td>
+      <td>Peter Svoboda</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <td><input type="checkbox" class="player"></td>
+      <td>Martin Kral</td>
+      <td>21</td>
+    </tr>
+    <tr>
+      <td><input type="checkbox" class="player"></td>
+      <td>Adam Hruby</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td><input type="checkbox" class="player"></td>
+      <td>Tomas Dvorak</td>
+      <td>19</td>
+    </tr>
+  </tbody>
+</table>
+
+<button id="continueBtn" class="action-btn" disabled> ✓ </button>
+
+<script>
+  const checkboxes = document.querySelectorAll('.player');
+  const button = document.getElementById('continueBtn');
+
+  function updateButton() {
+    const checkedCount = document.querySelectorAll('.player:checked').length;
+
+    if (checkedCount >= 5) {
+      button.disabled = false;
+      button.classList.add('enabled');
+    } else {
+      button.disabled = true;
+      button.classList.remove('enabled');
+    }
+  }
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', updateButton);
+  });
+
+  button.addEventListener('click', () => {
+    window.location.href = 'live_match.html';
+  });
+</script>
+
+</body>
+</html>
