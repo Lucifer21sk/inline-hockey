@@ -105,7 +105,7 @@ input[type="checkbox"] {
 .team-panel h2 {
   font-size: 62px;
   margin-bottom: 200px;
-  margin-top: 20px;
+  margin-top: 0px;
   z-index: 2;
 }
 
