@@ -12,9 +12,6 @@
       <h2>DOMÁCI</h2>
       <select id="homeTeam">
         <option value="">Vybrať tím</option>
-        <option>Team A</option>
-        <option>Team B</option>
-        <option>Team C</option>
       </select>
     </div>
 
@@ -22,9 +19,6 @@
       <h2>HOSTIA</h2>
       <select id="awayTeam">
         <option value="">Vybrať tím</option>
-        <option>Team D</option>
-        <option>Team E</option>
-        <option>Team F</option>
       </select>
     </div>
   </div>
@@ -32,6 +26,40 @@
   <div class="start">
     <button id="startBtn" class="action-btn" disabled>✓</button>
   </div>
+
+  <script>
+  const API_URL = "https://Lucifer21sk.pythonanywhere.com/teams";
+
+  async function loadTeams() {
+    try {
+      const response = await fetch(API_URL);
+      const teams = await response.json();
+
+      const homeSelect = document.getElementById("homeTeam");
+      const awaySelect = document.getElementById("awayTeam");
+
+      teams.forEach(team => {
+        const option1 = document.createElement("option");
+        option1.value = team;
+        option1.textContent = team;
+
+        const option2 = document.createElement("option");
+        option2.value = team;
+        option2.textContent = team;
+
+        homeSelect.appendChild(option1);
+        awaySelect.appendChild(option2);
+      });
+
+    } catch (err) {
+      alert("Cannot load teams from server");
+      console.error(err);
+    }
+  }
+
+  loadTeams();
+  </script>
+
 
   <script>
     const home = document.getElementById("homeTeam");
