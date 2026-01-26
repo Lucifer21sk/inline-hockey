@@ -88,6 +88,8 @@ input[type="checkbox"] {
   display: flex;
   align-items: flex-start;
   height: calc(100vh - 40px);
+  flex-direction: row;
+  height: 100vh;
 }
 
 .team-panel {
@@ -96,7 +98,7 @@ input[type="checkbox"] {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   overflow: hidden;
 }
@@ -104,7 +106,7 @@ input[type="checkbox"] {
 .team-panel h2 {
   font-size: 62px;
   margin-bottom: 40px;
-  margin-top: 120px;
+  margin-top: 0;
   z-index: 2;
 }
 
@@ -121,7 +123,6 @@ input[type="checkbox"] {
   flex-direction: column;
   gap: 80px;
   z-index: 2;
-  margin-top: 360px;
 }
 
 .team-actions button {
@@ -161,7 +162,6 @@ input[type="checkbox"] {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 220px;
 }
 
 .scoreboard {
