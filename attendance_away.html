@@ -9,8 +9,10 @@
 
 <body>
 
-<h1>Hosťujúci Tím : Dochádzka hráčov</h1>
+<h1>HOSTIA - <span id="teamName"></span></h1>
+<p> Dochádzka hráčov </p>
 
+<div class="table-scroll">
 <table>
   <thead>
     <tr>
@@ -19,40 +21,51 @@
       <th>Číslo</th>
     </tr>
   </thead>
-  <tbody>
-    <tr>
-      <td><input type="checkbox" class="player"></td>
-      <td>John Novak</td>
-      <td>12</td>
-    </tr>
-    <tr>
-      <td><input type="checkbox" class="player"></td>
-      <td>Peter Svoboda</td>
-      <td>7</td>
-    </tr>
-    <tr>
-      <td><input type="checkbox" class="player"></td>
-      <td>Martin Kral</td>
-      <td>21</td>
-    </tr>
-    <tr>
-      <td><input type="checkbox" class="player"></td>
-      <td>Adam Hruby</td>
-      <td>5</td>
-    </tr>
-    <tr>
-      <td><input type="checkbox" class="player"></td>
-      <td>Tomas Dvorak</td>
-      <td>19</td>
-    </tr>
-  </tbody>
+  <tbody id="playersBody"></tbody>
 </table>
+</div>
 
 <button id="continueBtn" class="action-btn" disabled> ✓ </button>
 
 <script>
+const params = new URLSearchParams(window.location.search);
+const team = params.get("away");
+
+const tbody = document.getElementById("playersBody");
+const teamNameEl = document.getElementById("teamName");
+const button = document.getElementById("continueBtn");
+
+teamNameEl.innerText = team;
+
+async function loadPlayers() {
+  try {
+    const res = await fetch(
+      "https://lucifer21sk.pythonanywhere.com/players/" + encodeURIComponent(team)
+    );
+    const players = await res.json();
+
+    tbody.innerHTML = "";
+
+    players.forEach(p => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><input type="checkbox" class="player"></td>
+        <td>${p.name}</td>
+        <td>${p.number}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    attachCheckboxEvents();
+
+  } catch (err) {
+    alert("Cannot load players from server");
+    console.error(err);
+  }
+}
+
+function attachCheckboxEvents() {
   const checkboxes = document.querySelectorAll('.player');
-  const button = document.getElementById('continueBtn');
 
   function updateButton() {
     const checkedCount = document.querySelectorAll('.player:checked').length;
@@ -69,11 +82,17 @@
   checkboxes.forEach(cb => {
     cb.addEventListener('change', updateButton);
   });
+}
 
-  button.addEventListener('click', () => {
-    window.location.href = 'live_match.html';
-  });
+button.addEventListener('click', () => {
+  const url =
+    `live_match.html?home=${encodeURIComponent(params.get("home"))}&away=${encodeURIComponent(params.get("away"))}`;
+  window.location.href = url;
+});
+
+loadPlayers();
 </script>
+
 
 </body>
 </html>

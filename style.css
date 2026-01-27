@@ -9,8 +9,8 @@ html, body {
 }
 
 h1 {
-  font-size: 48px;
-  margin-bottom: 40px;
+  font-size: 38px;
+  margin-bottom: 20px;
 }
 
 /* ===== TEAM SELECTION ===== */
@@ -41,7 +41,7 @@ select {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 22px;
+  font-size: 18px;
   background: white;
 }
 
@@ -55,14 +55,38 @@ th, td {
 }
 
 input[type="checkbox"] {
-  width: 28px;
-  height: 28px;
+  width: 18px;
+  height: 18px;
+}
+
+/* ===== SCROLLABLE PLAYER TABLE ===== */
+
+.table-scroll {
+  max-height: calc(100vh - 260px);  /* leaves room for header + button */
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+}
+
+/* ===== STICKY TABLE HEADER ===== */
+
+.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: #d3d3d3;
+  z-index: 5;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+/* smoother scrolling on touch devices */
+.table-scroll {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ===== MAIN ACTION BUTTON ===== */
 .action-btn {
   position: fixed;
-  bottom: 40px;
+  bottom: 20px;
   right: 40px;
   font-size: 26px;
   padding: 15px 30px;
