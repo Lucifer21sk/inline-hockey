@@ -91,11 +91,11 @@
 <script>
 
 const params = new URLSearchParams(window.location.search);
-const homeTeam = params.get("home");
-const awayTeam = params.get("away");
 
-let homeTeamId = null;
-let awayTeamId = null;
+const homeTeamId = Number(params.get("home"));
+const awayTeamId = Number(params.get("away"));
+
+
 let teamsLoaded = false
 
 document.getElementById("homeName").innerText = homeTeam;
@@ -106,28 +106,29 @@ async function loadTeamLogos() {
     const res = await fetch("https://Lucifer21sk.pythonanywhere.com/teams");
     const teams = await res.json();
 
-    const home = teams.find(t => t.name === homeTeam);
-    const away = teams.find(t => t.name === awayTeam);
+    const home = teams.find(t => t.id === homeTeamId);
+    const away = teams.find(t => t.id === awayTeamId);
 
-    if (home) {
-      document.getElementById("homeLogo").src = "logos/" + home.logo;
-      homeTeamId = home.id;
+    if (!home || !away) {
+      console.error("Team IDs not found", homeTeamId, awayTeamId);
+      return;
     }
 
-    if (away) {
-      document.getElementById("awayLogo").src = "logos/" + away.logo;
-      awayTeamId = away.id;
-    }
+    // store IDs (now guaranteed)
+    window.homeTeamId = home.id;
+    window.awayTeamId = away.id;
 
-    if (home && away) {
-      homeTeamId = home.id;
-      awayTeamId = away.id;
-      teamsLoaded = true;
-      console.log("Teams loaded:", homeTeamId, awayTeamId);
-    }
+    // set names
+    document.getElementById("homeTeamName").innerText = home.name;
+    document.getElementById("awayTeamName").innerText = away.name;
 
+    // set logos
+    document.getElementById("homeLogo").src = "logos/" + home.logo;
+    document.getElementById("awayLogo").src = "logos/" + away.logo;
+
+    console.log("Teams loaded:", home.id, away.id);
   } catch (err) {
-    console.error("Cannot load team logos", err);
+    console.error("Failed to load teams", err);
   }
 }
 
