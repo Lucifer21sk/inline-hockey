@@ -99,10 +99,6 @@ let homeTeam = null;
 let awayTeam = null;
 let teamsLoaded = false
 
-document.getElementById("homeName").innerText = home.name;
-document.getElementById("awayName").innerText = away.name;
-
-
 async function loadTeamLogos() {
   try {
     const res = await fetch("https://Lucifer21sk.pythonanywhere.com/teams");
