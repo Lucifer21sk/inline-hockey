@@ -7,9 +7,11 @@
 </head>
 <body>
 
-  <h2 id="teamName">HOSTIA</h2>
+  <!-- KEEP YOUR EXISTING HEADER / TITLE -->
+  <h2 class="team-title">HOSTIA</h2>
 
-  <table>
+  <!-- KEEP YOUR EXISTING TABLE STRUCTURE -->
+  <table class="players-table">
     <thead>
       <tr>
         <th></th>
@@ -17,63 +19,83 @@
         <th>Číslo</th>
       </tr>
     </thead>
-    <tbody id="playersBody"></tbody>
+    <tbody id="playersBody">
+      <!-- players injected here -->
+    </tbody>
   </table>
 
+  <!-- KEEP YOUR EXISTING BUTTON STYLE / POSITION -->
   <div class="start">
     <button id="continueBtn" class="action-btn" disabled>Pokračovať</button>
   </div>
 
   <script>
+    // ===============================
+    // URL PARAMS (IDS)
+    // ===============================
     const params = new URLSearchParams(window.location.search);
-    const homeId = params.get("home");
-    const teamId = params.get("away");
+    const homeTeamId = params.get("home");
+    const awayTeamId = params.get("away");
 
     const tbody = document.getElementById("playersBody");
-    const teamNameEl = document.getElementById("teamName");
-    const btn = document.getElementById("continueBtn");
+    const continueBtn = document.getElementById("continueBtn");
 
+    // ===============================
+    // ENABLE BUTTON AFTER 5 PLAYERS
+    // ===============================
     function updateButtonState() {
-      const checked = document.querySelectorAll(".player-checkbox:checked");
-      btn.disabled = checked.length < 5;
+      const checked =
+        document.querySelectorAll('input[type="checkbox"]:checked');
+      continueBtn.disabled = checked.length < 5;
     }
 
-    async function loadTeamName() {
-      const res = await fetch("https://lucifer21sk.pythonanywhere.com/teams");
-      const teams = await res.json();
-      const team = teams.find(t => t.id == teamId);
-      if (team) teamNameEl.innerText = team.name;
-    }
-
+    // ===============================
+    // LOAD PLAYERS (AWAY TEAM)
+    // ===============================
     async function loadPlayers() {
-      const res = await fetch(
-        "https://lucifer21sk.pythonanywhere.com/players/" + teamId
-      );
-      const players = await res.json();
+      try {
+        const res = await fetch(
+          "https://lucifer21sk.pythonanywhere.com/players/" + awayTeamId
+        );
+        const players = await res.json();
 
-      tbody.innerHTML = "";
+        tbody.innerHTML = "";
 
-      players.forEach(p => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><input type="checkbox" class="player-checkbox"></td>
-          <td>${p.name}</td>
-          <td>${p.number}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+        players.forEach(player => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>
+              <input type="checkbox" class="player-checkbox">
+            </td>
+            <td>${player.name}</td>
+            <td>${player.number}</td>
+          `;
+          tbody.appendChild(tr);
+        });
 
-      document
-        .querySelectorAll(".player-checkbox")
-        .forEach(cb => cb.addEventListener("change", updateButtonState));
+        document
+          .querySelectorAll(".player-checkbox")
+          .forEach(cb =>
+            cb.addEventListener("change", updateButtonState)
+          );
+
+      } catch (err) {
+        console.error(err);
+        alert("Nepodarilo sa načítať hráčov");
+      }
     }
 
-    btn.addEventListener("click", () => {
+    // ===============================
+    // CONTINUE → LIVE MATCH
+    // ===============================
+    continueBtn.addEventListener("click", () => {
       window.location.href =
-        `live_match.html?home=${homeId}&away=${teamId}`;
+        `live_match.html?home=${homeTeamId}&away=${awayTeamId}`;
     });
 
-    loadTeamName();
+    // ===============================
+    // INIT
+    // ===============================
     loadPlayers();
   </script>
 
