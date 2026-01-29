@@ -96,6 +96,7 @@ const awayTeam = params.get("away");
 
 let homeTeamId = null;
 let awayTeamId = null;
+let teamsLoaded = false
 
 document.getElementById("homeName").innerText = homeTeam;
 document.getElementById("awayName").innerText = awayTeam;
@@ -116,6 +117,13 @@ async function loadTeamLogos() {
     if (away) {
       document.getElementById("awayLogo").src = "logos/" + away.logo;
       awayTeamId = away.id;
+    }
+
+    if (home && away) {
+      homeTeamId = home.id;
+      awayTeamId = away.id;
+      teamsLoaded = true;
+      console.log("Teams loaded:", homeTeamId, awayTeamId);
     }
 
   } catch (err) {
@@ -159,6 +167,7 @@ loadTeamLogos();
       input.value = digits;
     }
   });
+
 }
 
 setupTimeInput("goalTime");
@@ -177,21 +186,20 @@ setupTimeInput("penaltyTime");
   }
 
   async function confirmPenalty() {
-      const minute = document.getElementById("penaltyTime").value;
-  const player = document.getElementById("penaltyPlayer").value;
-  const type = document.getElementById("penaltyType").value;
+    const minute = document.getElementById("penaltyTime").value;
+    const player = document.getElementById("penaltyPlayer").value;
+    const type = document.getElementById("penaltyType").value;
 
   if (!minute || !player || !type) {
     alert("Vyplň všetky polia");
     return;
   }
 
-  const teamId = activeTeam === "home" ? homeTeamId : awayTeamId;
-
-  if (!teamId) {
-    alert("Neznámy tím");
+  if (!teamsLoaded) {
+    alert("Tímy sa ešte načítavajú, počkaj sekundu...");
     return;
   }
+    const teamId = activeTeam === "home" ? homeTeamId : awayTeamId;
 
   const payload = {
     match_id: 1,
