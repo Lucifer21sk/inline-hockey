@@ -98,8 +98,9 @@ const awayTeamId = Number(params.get("away"));
 
 let teamsLoaded = false
 
-document.getElementById("homeName").innerText = homeTeam;
-document.getElementById("awayName").innerText = awayTeam;
+document.getElementById("homeName").innerText = home.name;
+document.getElementById("awayName").innerText = away.name;
+
 
 async function loadTeamLogos() {
   try {
