@@ -40,12 +40,12 @@
 
       teams.forEach(team => {
         const option1 = document.createElement("option");
-        option1.value = team;
-        option1.textContent = team;
+        option1.value = team.name;
+        option1.textContent = team.name;
 
         const option2 = document.createElement("option");
-        option2.value = team;
-        option2.textContent = team;
+        option2.value = team.name;
+        option2.textContent = team.name;
 
         homeSelect.appendChild(option1);
         awaySelect.appendChild(option2);
