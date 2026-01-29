@@ -41,8 +41,6 @@
       const response = await fetch(API_URL);
       const teams = await response.json();
 
-          console.log("Loaded teams:", teams); // 👈 THIS
-
       teams.forEach(team => {
         const option1 = document.createElement("option");
         option1.value = team.id;          
@@ -63,7 +61,7 @@
     }
   }
 
-  window.addEventListener("DOMContentLoader", loadTeams);
+  window.addEventListener("DOMContentLoaded", loadTeams);
   </script>
 
 
