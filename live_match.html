@@ -13,7 +13,7 @@
 
   <!-- HOME -->
   <div class="team-panel">
-    <img src="home.jpg" class="team-logo">
+    <img id="homeLogo" class="team-logo">
     <h2>DOMÁCI</h2>
 
     <div class="team-actions">
@@ -33,7 +33,7 @@
 
   <!-- AWAY -->
   <div class="team-panel">
-    <img src="away.jpg" class="team-logo">
+    <img id="awayLogo" class="team-logo">
     <h2>HOSTIA</h2>
 
     <div class="team-actions">
@@ -89,6 +89,38 @@
 </div>
 
 <script>
+
+const params = new URLSearchParams(window.location.search);
+const homeTeam = params.get("home");
+const awayTeam = params.get("away");
+
+document.getElementById("homeName").innerText = homeTeam;
+document.getElementById("awayName").innerText = awayTeam;
+
+async function loadTeamLogos() {
+  try {
+    const res = await fetch("https://Lucifer21sk.pythonanywhere.com/teams");
+    const teams = await res.json();
+
+    const home = teams.find(t => t.name === homeTeam);
+    const away = teams.find(t => t.name === awayTeam);
+
+    if (home) {
+      document.getElementById("homeLogo").src = "logos/" + home.logo;
+    }
+
+    if (away) {
+      document.getElementById("awayLogo").src = "logos/" + away.logo;
+    }
+
+  } catch (err) {
+    console.error("Cannot load team logos", err);
+  }
+}
+
+loadTeamLogos();
+
+
   let homeScore = 0;
   let awayScore = 0;
   let activeTeam = null;
@@ -148,7 +180,6 @@ setupTimeInput("penaltyTime");
   function endMatch() {
     window.location.href = "post_match.html";
 }
-
 
 </script>
 
