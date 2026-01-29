@@ -203,7 +203,7 @@ setupTimeInput("penaltyTime");
     const result = await res.json();
 
     if (result.status === "ok") {
-      closePenalty();
+      closeModal();
       alert("Trest uložený ✅");
     } else {
       alert("Nepodarilo sa uložiť trest");
@@ -213,7 +213,6 @@ setupTimeInput("penaltyTime");
     console.error(err);
     alert("Chyba spojenia so serverom");
   }
-    closeModal();
   }
 
   function endMatch() {
