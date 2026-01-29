@@ -126,8 +126,8 @@ input[type="checkbox"] {
 }
 
 .team-panel h2 {
-  font-size: 62px;
-  margin-bottom: 200px;
+  font-size: 32px;
+  margin-bottom: 230px;
   margin-top: 0px;
   z-index: 2;
 }
@@ -135,8 +135,8 @@ input[type="checkbox"] {
 .team-logo {
   position: absolute;
   opacity: 0.20;
-  max-width: 70%;
-  max-height: 70%;
+  max-width: 60%;
+  max-height: 60%;
   z-index: 1;
 }
 
@@ -144,9 +144,8 @@ input[type="checkbox"] {
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 80px;
+  gap: 60px;
   z-index: 2;
-  padding-bottom: 40px;
 }
 
 .team-actions button {
