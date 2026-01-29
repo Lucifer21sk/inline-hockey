@@ -7,32 +7,30 @@
 </head>
 <body>
 
-  <!-- KEEP YOUR EXISTING HEADER / TITLE -->
-  <h2 class="team-title">DOMÁCI</h2>
+  <h1>DOMÁCI</h1>
 
-  <!-- KEEP YOUR EXISTING TABLE STRUCTURE -->
-  <table class="players-table">
-    <thead>
-      <tr>
-        <th></th>
-        <th>Meno</th>
-        <th>Číslo</th>
-      </tr>
-    </thead>
-    <tbody id="playersBody">
-      <!-- players injected here -->
-    </tbody>
-  </table>
-
-  <!-- KEEP YOUR EXISTING BUTTON STYLE / POSITION -->
-  <div class="start">
-    <button id="continueBtn" class="action-btn" disabled>Pokračovať</button>
+  <!-- SCROLLABLE TABLE CONTAINER (REQUIRED BY YOUR CSS) -->
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Meno</th>
+          <th>Číslo</th>
+        </tr>
+      </thead>
+      <tbody id="playersBody">
+        <!-- players injected here -->
+      </tbody>
+    </table>
   </div>
 
+  <!-- FIXED ACTION BUTTON (ALREADY STYLED) -->
+  <button id="continueBtn" class="action-btn" disabled>
+    Pokračovať
+  </button>
+
   <script>
-    // ===============================
-    // URL PARAMS (IDS, NOT NAMES)
-    // ===============================
     const params = new URLSearchParams(window.location.search);
     const homeTeamId = params.get("home");
     const awayTeamId = params.get("away");
@@ -40,62 +38,44 @@
     const tbody = document.getElementById("playersBody");
     const continueBtn = document.getElementById("continueBtn");
 
-    // ===============================
-    // ENABLE BUTTON AFTER 5 PLAYERS
-    // ===============================
     function updateButtonState() {
       const checked =
         document.querySelectorAll('input[type="checkbox"]:checked');
       continueBtn.disabled = checked.length < 5;
     }
 
-    // ===============================
-    // LOAD PLAYERS (BY TEAM ID)
-    // ===============================
     async function loadPlayers() {
-      try {
-        const res = await fetch(
-          "https://lucifer21sk.pythonanywhere.com/players/" + homeTeamId
+      const res = await fetch(
+        "https://lucifer21sk.pythonanywhere.com/players/" + homeTeamId
+      );
+      const players = await res.json();
+
+      tbody.innerHTML = "";
+
+      players.forEach(player => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>
+            <input type="checkbox" class="player-checkbox">
+          </td>
+          <td>${player.name}</td>
+          <td>${player.number}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document
+        .querySelectorAll(".player-checkbox")
+        .forEach(cb =>
+          cb.addEventListener("change", updateButtonState)
         );
-        const players = await res.json();
-
-        tbody.innerHTML = "";
-
-        players.forEach(player => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>
-              <input type="checkbox" class="player-checkbox">
-            </td>
-            <td>${player.name}</td>
-            <td>${player.number}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-
-        document
-          .querySelectorAll(".player-checkbox")
-          .forEach(cb =>
-            cb.addEventListener("change", updateButtonState)
-          );
-
-      } catch (err) {
-        console.error(err);
-        alert("Nepodarilo sa načítať hráčov");
-      }
     }
 
-    // ===============================
-    // CONTINUE → AWAY ATTENDANCE
-    // ===============================
     continueBtn.addEventListener("click", () => {
       window.location.href =
         `attendance_away.html?home=${homeTeamId}&away=${awayTeamId}`;
     });
 
-    // ===============================
-    // INIT
-    // ===============================
     loadPlayers();
   </script>
 
