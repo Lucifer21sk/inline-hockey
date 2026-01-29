@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="sk">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inline Hokej Zápas</title>
@@ -28,74 +28,94 @@
   </div>
 
   <script>
-  const API_URL = "https://Lucifer21sk.pythonanywhere.com/teams";
+    // =========================
+    // CONFIG
+    // =========================
+    const API_URL = "https://Lucifer21sk.pythonanywhere.com/teams";
 
-  async function loadTeams() {
-    try {
-      const homeSelect = document.getElementById("homeTeam");
-      const awaySelect = document.getElementById("awayTeam");
+    // =========================
+    // DOM ELEMENTS
+    // =========================
+    const homeSelect = document.getElementById("homeTeam");
+    const awaySelect = document.getElementById("awayTeam");
+    const startBtn   = document.getElementById("startBtn");
 
-      homeSelect.innerHTML = '<option value="">Vybrať tím</option>';
-      awaySelect.innerHTML = '<option value="">Vybrať tím</option>';
+    // =========================
+    // STATE CHECK
+    // =========================
+    function checkReady() {
+      const homeVal = homeSelect.value;
+      const awayVal = awaySelect.value;
 
-      const response = await fetch(API_URL);
-      const teams = await response.json();
+      console.log("checkReady:", homeVal, awayVal);
 
-      teams.forEach(team => {
-        const option1 = document.createElement("option");
-        option1.value = team.id;          
-        option1.textContent = team.name; 
-
-        const option2 = document.createElement("option");
-        option2.value = team.id;
-        option2.textContent = team.name;
-
-        homeSelect.appendChild(option1);
-        awaySelect.appendChild(option2);
-      });
-
-
-    } catch (err) {
-      alert("Cannot load teams from server");
-      console.error(err);
+      startBtn.disabled = !(
+        homeVal !== "" &&
+        awayVal !== "" &&
+        homeVal !== awayVal
+      );
     }
-  }
 
-  window.addEventListener("DOMContentLoaded", loadTeams);
-  </script>
+    // =========================
+    // LOAD TEAMS
+    // =========================
+    async function loadTeams() {
+      try {
+        // Reset UI state
+        homeSelect.innerHTML = '<option value="">Vybrať tím</option>';
+        awaySelect.innerHTML = '<option value="">Vybrať tím</option>';
+        startBtn.disabled = true;
 
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error("HTTP error " + response.status);
+        }
 
-  <script>
-    const home = document.getElementById("homeTeam");
-    const away = document.getElementById("awayTeam");
-    const btn = document.getElementById("startBtn");
+        const teams = await response.json();
+        console.log("Loaded teams:", teams);
 
-  function checkReady() {
-    const homeVal = home.value;
-    const awayVal = away.value;
+        teams.forEach(team => {
+          const optHome = document.createElement("option");
+          optHome.value = String(team.id);   // IDs stay as strings in HTML
+          optHome.textContent = team.name;
 
-    console.log("checkReady raw:", homeVal, awayVal);
+          const optAway = document.createElement("option");
+          optAway.value = String(team.id);
+          optAway.textContent = team.name;
 
-    if (
-      homeVal !== "" &&
-      awayVal !== "" &&
-      homeVal !== awayVal
-    ) {
-      btn.disabled = false;
-    } else {
-      btn.disabled = true;
+          homeSelect.appendChild(optHome);
+          awaySelect.appendChild(optAway);
+        });
+
+      } catch (err) {
+        console.error("Failed to load teams:", err);
+        alert("Nepodarilo sa načítať tímy zo servera");
+      }
     }
-  }
 
+    // =========================
+    // EVENT LISTENERS
+    // =========================
+    homeSelect.addEventListener("change", checkReady);
+    awaySelect.addEventListener("change", checkReady);
 
-    home.addEventListener("change", checkReady);
-    away.addEventListener("change", checkReady);
+    startBtn.addEventListener("click", () => {
+      const homeId = homeSelect.value;
+      const awayId = awaySelect.value;
 
-    btn.addEventListener("click", () => {
-      const url =
-        `attendance_home.html?home=${encodeURIComponent(home.value)}&away=${encodeURIComponent(away.value)}`;
-      window.location.href = url;
+      // Safety guard (should never trigger now)
+      if (!homeId || !awayId || homeId === awayId) {
+        return;
+      }
+
+      window.location.href =
+        `attendance_home.html?home=${homeId}&away=${awayId}`;
     });
+
+    // =========================
+    // INIT
+    // =========================
+    window.addEventListener("DOMContentLoaded", loadTeams);
   </script>
 
 </body>
