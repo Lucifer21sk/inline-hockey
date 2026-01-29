@@ -121,6 +121,8 @@ async function loadTeamLogos() {
     document.getElementById("homeLogo").src = "logos/" + homeTeam.logo;
     document.getElementById("awayLogo").src = "logos/" + awayTeam.logo;
 
+    teamsLoaded = true;
+    
     console.log("Teams loaded:", homeTeam.id, awayTeam.id);
 
   } catch (err) {
