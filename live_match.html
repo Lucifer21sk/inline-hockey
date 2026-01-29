@@ -94,6 +94,9 @@ const params = new URLSearchParams(window.location.search);
 const homeTeam = params.get("home");
 const awayTeam = params.get("away");
 
+let homeTeamId = null;
+let awayTeamId = null;
+
 document.getElementById("homeName").innerText = homeTeam;
 document.getElementById("awayName").innerText = awayTeam;
 
@@ -107,10 +110,12 @@ async function loadTeamLogos() {
 
     if (home) {
       document.getElementById("homeLogo").src = "logos/" + home.logo;
+      homeTeamId = home.id;
     }
 
     if (away) {
       document.getElementById("awayLogo").src = "logos/" + away.logo;
+      awayTeamId = away.id;
     }
 
   } catch (err) {
@@ -119,7 +124,6 @@ async function loadTeamLogos() {
 }
 
 loadTeamLogos();
-
 
   let homeScore = 0;
   let awayScore = 0;
@@ -182,8 +186,12 @@ setupTimeInput("penaltyTime");
     return;
   }
 
-  // ⚠️ temporary team mapping (we’ll improve later)
-  const teamId = activeTeam === "home" ? 1 : 2;
+  const teamId = activeTeam === "home" ? homeTeamId : awayTeamId;
+
+  if (!teamId) {
+    alert("Neznámy tím");
+    return;
+  }
 
   const payload = {
     match_id: 1,
@@ -204,9 +212,8 @@ setupTimeInput("penaltyTime");
 
     if (result.status === "ok") {
       closeModal();
-      alert("Trest uložený ✅");
     } else {
-      alert("Nepodarilo sa uložiť trest");
+      console.error("Server error",result);
     }
 
   } catch (err) {
