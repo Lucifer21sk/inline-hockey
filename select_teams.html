@@ -70,18 +70,23 @@
     const away = document.getElementById("awayTeam");
     const btn = document.getElementById("startBtn");
 
-    function checkReady() {
-      const homeId = Number(home.value);
-      const awayId = Number(away.value);
+  function checkReady() {
+    const homeVal = home.value;
+    const awayVal = away.value;
 
-      console.log("checkReady:", homeId, awayId);
+    console.log("checkReady raw:", homeVal, awayVal);
 
-      if (homeId > 0 && awayId > 0 && homeId !== awayId) {
-        btn.disabled = false;
-      } else {
-        btn.disabled = true;
-      }
+    if (
+      homeVal !== "" &&
+      awayVal !== "" &&
+      homeVal !== awayVal
+    ) {
+      btn.disabled = false;
+    } else {
+      btn.disabled = true;
     }
+  }
+
 
     home.addEventListener("change", checkReady);
     away.addEventListener("change", checkReady);
