@@ -37,7 +37,6 @@
 
       homeSelect.innerHTML = '<option value="">Vybrať tím</option>';
       awaySelect.innerHTML = '<option value="">Vybrať tím</option>';
-      btn.disabled = true;
 
       const response = await fetch(API_URL);
       const teams = await response.json();
