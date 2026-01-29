@@ -32,11 +32,15 @@
 
   async function loadTeams() {
     try {
-      const response = await fetch(API_URL);
-      const teams = await response.json();
-
       const homeSelect = document.getElementById("homeTeam");
       const awaySelect = document.getElementById("awayTeam");
+
+      homeSelect.innerHTML = '<option value="">Vybrať tím</option>';
+      awaySelect.innerHTML = '<option value="">Vybrať tím</option>';
+      btn.disabled = true;
+
+      const response = await fetch(API_URL);
+      const teams = await response.json();
 
       teams.forEach(team => {
         const option1 = document.createElement("option");
@@ -58,7 +62,7 @@
     }
   }
 
-  loadTeams();
+  window.addEventListener("DOMContentLoader", loadTeams);
   </script>
 
 
@@ -68,7 +72,16 @@
     const btn = document.getElementById("startBtn");
 
     function checkReady() {
-      btn.disabled = !(home.value && away.value && home.value !== away.value);
+      const homeId = Number(home.value);
+      const awayId = Number(away.value);
+
+      console.log("checkReady:", homeId, awayId);
+
+      if (homeId > 0 && awayId > 0 && homeId !== awayId) {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
     }
 
     home.addEventListener("change", checkReady);
