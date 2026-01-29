@@ -1,97 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sk">
 <head>
-  <meta charset="UTF-8">
-  <title>Domáci tím</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+  <title>Dochádzka – Domáci</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<h1>DOMÁCI - <span id="teamName"></span></h1>
-<p> Dochádzka hráčov </p>
+  <h2 id="teamName">DOMÁCI</h2>
 
-<div class="table-scroll">
-<table>
-  <thead>
-    <tr>
-      <th>TU</th>
-      <th>Meno</th>
-      <th>Číslo</th>
-    </tr>
-  </thead>
-  <tbody id="playersBody"></tbody>
-</table>
-</div>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Meno</th>
+        <th>Číslo</th>
+      </tr>
+    </thead>
+    <tbody id="playersBody"></tbody>
+  </table>
 
-<button id="continueBtn" class="action-btn" disabled> ✓ </button>
+  <div class="start">
+    <button id="continueBtn" class="action-btn" disabled>Pokračovať</button>
+  </div>
 
-<script>
-const params = new URLSearchParams(window.location.search);
-const team = params.get("home");
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const teamId = params.get("home");
+    const awayId = params.get("away");
 
-const tbody = document.getElementById("playersBody");
-const teamNameEl = document.getElementById("teamName");
-const button = document.getElementById("continueBtn");
+    const tbody = document.getElementById("playersBody");
+    const teamNameEl = document.getElementById("teamName");
+    const btn = document.getElementById("continueBtn");
 
-teamNameEl.innerText = team;
+    function updateButtonState() {
+      const checked = document.querySelectorAll(".player-checkbox:checked");
+      btn.disabled = checked.length < 5;
+    }
 
-async function loadPlayers() {
-  try {
-    const res = await fetch(
-      "https://lucifer21sk.pythonanywhere.com/players/" + encodeURIComponent(team)
-    );
-    const players = await res.json();
+    async function loadTeamName() {
+      const res = await fetch("https://lucifer21sk.pythonanywhere.com/teams");
+      const teams = await res.json();
+      const team = teams.find(t => t.id == teamId);
+      if (team) teamNameEl.innerText = team.name;
+    }
 
-    tbody.innerHTML = "";
+    async function loadPlayers() {
+      const res = await fetch(
+        "https://lucifer21sk.pythonanywhere.com/players/" + teamId
+      );
+      const players = await res.json();
 
-    players.forEach(p => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td><input type="checkbox" class="player"></td>
-        <td>${p.name}</td>
-        <td>${p.number}</td>
-      `;
-      tbody.appendChild(row);
+      tbody.innerHTML = "";
+
+      players.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="checkbox" class="player-checkbox"></td>
+          <td>${p.name}</td>
+          <td>${p.number}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document
+        .querySelectorAll(".player-checkbox")
+        .forEach(cb => cb.addEventListener("change", updateButtonState));
+    }
+
+    btn.addEventListener("click", () => {
+      window.location.href =
+        `attendance_away.html?home=${teamId}&away=${awayId}`;
     });
 
-    attachCheckboxEvents();
-
-  } catch (err) {
-    alert("Cannot load players from server");
-    console.error(err);
-  }
-}
-
-function attachCheckboxEvents() {
-  const checkboxes = document.querySelectorAll('.player');
-
-  function updateButton() {
-    const checkedCount = document.querySelectorAll('.player:checked').length;
-
-    if (checkedCount >= 5) {
-      button.disabled = false;
-      button.classList.add('enabled');
-    } else {
-      button.disabled = true;
-      button.classList.remove('enabled');
-    }
-  }
-
-  checkboxes.forEach(cb => {
-    cb.addEventListener('change', updateButton);
-  });
-}
-
-button.addEventListener('click', () => {
-  const url =
-    `attendance_away.html?home=${encodeURIComponent(params.get("home"))}&away=${encodeURIComponent(params.get("away"))}`;
-  window.location.href = url;
-});
-
-loadPlayers();
-</script>
+    loadTeamName();
+    loadPlayers();
+  </script>
 
 </body>
 </html>
