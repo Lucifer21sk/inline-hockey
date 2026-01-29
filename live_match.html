@@ -172,8 +172,47 @@ setupTimeInput("penaltyTime");
     closeModal();
   }
 
-  function confirmPenalty() {
-    // later: store penalty info
+  async function confirmPenalty() {
+      const minute = document.getElementById("penaltyTime").value;
+  const player = document.getElementById("penaltyPlayer").value;
+  const type = document.getElementById("penaltyType").value;
+
+  if (!minute || !player || !type) {
+    alert("Vyplň všetky polia");
+    return;
+  }
+
+  // ⚠️ temporary team mapping (we’ll improve later)
+  const teamId = activeTeam === "home" ? 1 : 2;
+
+  const payload = {
+    match_id: 1,
+    team_id: teamId,
+    player_number: Number(player),
+    minute: minute,
+    type: type
+  };
+
+  try {
+    const res = await fetch("https://Lucifer21sk.pythonanywhere.com/penalty", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+
+    if (result.status === "ok") {
+      closePenalty();
+      alert("Trest uložený ✅");
+    } else {
+      alert("Nepodarilo sa uložiť trest");
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Chyba spojenia so serverom");
+  }
     closeModal();
   }
 
