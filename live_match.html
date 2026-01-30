@@ -97,14 +97,23 @@ const awayTeamId = Number(params.get("away"));
 
 let homeTeam = null;
 let awayTeam = null;
-let teamsLoaded = false
+let teamsLoaded = false;
 
+let homeScore = 0;
+let awayScore = 0;
+let activeTeam = null;
+
+const goalModal = document.getElementById("goalModal");
+const penaltyModal = document.getElementById("penaltyModal");
+
+/* =========================
+   LOAD TEAM NAMES + LOGOS
+   ========================= */
 async function loadTeamLogos() {
   try {
     const res = await fetch("https://Lucifer21sk.pythonanywhere.com/teams");
     const teams = await res.json();
 
-    // find teams by ID (IDs come from URL)
     homeTeam = teams.find(t => t.id === homeTeamId);
     awayTeam = teams.find(t => t.id === awayTeamId);
 
@@ -113,16 +122,13 @@ async function loadTeamLogos() {
       return;
     }
 
-    // set names
     document.getElementById("homeName").innerText = homeTeam.name;
     document.getElementById("awayName").innerText = awayTeam.name;
 
-    // set logos
     document.getElementById("homeLogo").src = "logos/" + homeTeam.logo;
     document.getElementById("awayLogo").src = "logos/" + awayTeam.logo;
 
     teamsLoaded = true;
-    
     console.log("Teams loaded:", homeTeam.id, awayTeam.id);
 
   } catch (err) {
@@ -132,62 +138,111 @@ async function loadTeamLogos() {
 
 loadTeamLogos();
 
-  let homeScore = 0;
-  let awayScore = 0;
-  let activeTeam = null;
+/* =========================
+   MODAL HANDLING
+   ========================= */
+function openGoal(team) {
+  activeTeam = team;
+  goalModal.classList.add("active");
+}
 
-  const goalModal = document.getElementById("goalModal");
-  const penaltyModal = document.getElementById("penaltyModal");
+function openPenalty(team) {
+  activeTeam = team;
+  penaltyModal.classList.add("active");
+}
 
-  function openGoal(team) {
-    activeTeam = team;
-    goalModal.classList.add("active");
-  }
+function closeModal() {
+  goalModal.classList.remove("active");
+  penaltyModal.classList.remove("active");
+}
 
-  function openPenalty(team) {
-    activeTeam = team;
-    penaltyModal.classList.add("active");
-  }
-
-  function closeModal() {
-    goalModal.classList.remove("active");
-    penaltyModal.classList.remove("active");
-  }
-
-  function setupTimeInput(id) {
+/* =========================
+   AUTO FORMAT TIME INPUT
+   ========================= */
+function setupTimeInput(id) {
   const input = document.getElementById(id);
 
   input.addEventListener("input", () => {
     let digits = input.value.replace(/\D/g, "").slice(0, 4);
-
     if (digits.length >= 3) {
       input.value = digits.slice(0, 2) + ":" + digits.slice(2);
     } else {
       input.value = digits;
     }
   });
-
 }
 
 setupTimeInput("goalTime");
 setupTimeInput("penaltyTime");
 
+/* =========================
+   CONFIRM GOAL (NEW)
+   ========================= */
+async function confirmGoal() {
+  const minute = document.getElementById("goalTime").value;
+  const scorer = document.getElementById("goalScorer").value;
+  const assist1 = document.getElementById("goalAssist1").value;
+  const assist2 = document.getElementById("goalAssist2").value;
 
-  function confirmGoal() {
-    if (activeTeam === "home") {
-      homeScore++;
-      document.getElementById("homeScore").textContent = homeScore;
-    } else {
-      awayScore++;
-      document.getElementById("awayScore").textContent = awayScore;
-    }
-    closeModal();
+  if (!minute || !scorer) {
+    alert("Vyplň čas a strelca");
+    return;
   }
 
-  async function confirmPenalty() {
-    const minute = document.getElementById("penaltyTime").value;
-    const player = document.getElementById("penaltyPlayer").value;
-    const type = document.getElementById("penaltyType").value;
+  if (!teamsLoaded) {
+    alert("Tímy sa ešte načítavajú, počkaj sekundu...");
+    return;
+  }
+
+  const teamId = activeTeam === "home" ? homeTeamId : awayTeamId;
+
+  const payload = {
+    match_id: 1,
+    team_id: teamId,
+    scorer_number: Number(scorer),
+    assist1_number: assist1 ? Number(assist1) : null,
+    assist2_number: assist2 ? Number(assist2) : null,
+    minute: minute
+  };
+
+  try {
+    const res = await fetch("https://Lucifer21sk.pythonanywhere.com/goal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+
+    if (result.status === "ok") {
+      // update score ONLY after server success
+      if (activeTeam === "home") {
+        homeScore++;
+        document.getElementById("homeScore").textContent = homeScore;
+      } else {
+        awayScore++;
+        document.getElementById("awayScore").textContent = awayScore;
+      }
+
+      closeModal();
+    } else {
+      console.error("Server error", result);
+      alert("Chyba pri ukladaní gólu");
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Chyba spojenia so serverom");
+  }
+}
+
+/* =========================
+   CONFIRM PENALTY (UNCHANGED)
+   ========================= */
+async function confirmPenalty() {
+  const minute = document.getElementById("penaltyTime").value;
+  const player = document.getElementById("penaltyPlayer").value;
+  const type = document.getElementById("penaltyType").value;
 
   if (!minute || !player || !type) {
     alert("Vyplň všetky polia");
@@ -198,7 +253,8 @@ setupTimeInput("penaltyTime");
     alert("Tímy sa ešte načítavajú, počkaj sekundu...");
     return;
   }
-    const teamId = activeTeam === "home" ? homeTeamId : awayTeamId;
+
+  const teamId = activeTeam === "home" ? homeTeamId : awayTeamId;
 
   const payload = {
     match_id: 1,
@@ -220,20 +276,24 @@ setupTimeInput("penaltyTime");
     if (result.status === "ok") {
       closeModal();
     } else {
-      console.error("Server error",result);
+      console.error("Server error", result);
     }
 
   } catch (err) {
     console.error(err);
     alert("Chyba spojenia so serverom");
   }
-  }
+}
 
-  function endMatch() {
-    window.location.href = "post_match.html";
+/* =========================
+   END MATCH
+   ========================= */
+function endMatch() {
+  window.location.href = "post_match.html";
 }
 
 </script>
+
 
 </body>
 </html>
