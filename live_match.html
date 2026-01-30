@@ -90,6 +90,19 @@
 
 <script>
 
+function clearGoalModal() {
+  document.getElementById("goalTime").value = "";
+  document.getElementById("goalScorer").value = "";
+  document.getElementById("goalAssist1").value = "";
+  document.getElementById("goalAssist2").value = "";
+}
+
+function clearPenaltyModal() {
+  document.getElementById("penaltyTime").value = "";
+  document.getElementById("penaltyPlayer").value = "";
+  document.getElementById("penaltyType").value = "";
+}
+
 const params = new URLSearchParams(window.location.search);
 
 const homeTeamId = Number(params.get("home"));
@@ -224,6 +237,7 @@ async function confirmGoal() {
         document.getElementById("awayScore").textContent = awayScore;
       }
 
+      clearGoalModal();
       closeModal();
     } else {
       console.error("Server error", result);
@@ -274,6 +288,7 @@ async function confirmPenalty() {
     const result = await res.json();
 
     if (result.status === "ok") {
+      clearPenaltyModal();
       closeModal();
     } else {
       console.error("Server error", result);
