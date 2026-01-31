@@ -390,8 +390,39 @@ async function confirmPenalty() {
 /* =========================
    END MATCH
    ========================= */
-function endMatch() {
-  window.location.href = "post_match.html";
+async function endMatch() {
+  try {
+
+    let winner = null;
+
+    if (homeScore > awayScore) winner = homeTeamId;
+    if (awayScore > homeScore) winner = awayTeamId;
+
+    if (!winner) {
+      alert("Remíza nie je možná — musí byť víťaz");
+      return;
+    }
+
+    await fetch(
+      "https://Lucifer21sk.pythonanywhere.com/matches/end",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          match_id: matchId,
+          winner_team_id: winner,
+          phase: currentPhase
+        })
+      }
+    );
+
+    window.location.href = "post_match.html";
+
+  } catch (err) {
+    console.error("End match failed", err);
+  }
 }
 
 </script>
