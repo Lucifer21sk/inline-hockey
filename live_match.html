@@ -418,7 +418,7 @@ async function endMatch() {
       }
     );
 
-    window.location.href = "post_match.html";
+    window.location.href = "post_match.html?match=" + matchId;
 
   } catch (err) {
     console.error("End match failed", err);

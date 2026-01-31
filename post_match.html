@@ -16,12 +16,12 @@
 
     <div class="form-group">
       <label>Rozhodca</label>
-      <input type="text">
+      <input type="text" id="referee">
     </div>
 
     <div class="form-group">
       <label>Lekár</label>
-      <input type="text">
+      <input type="text" id="doctor">
     </div>
 
     <div class="form-group">
@@ -38,10 +38,44 @@
 </div>
 
 <script>
-  function finishApp() {
-    window.location.href = "select_teams.html";
-    //window.close();  // Close the app window
+async function finishApp() {
+  const params = new URLSearchParams(window.location.search);
+  const matchId = params.get("match");
+
+  if (!matchId) {
+    alert("Chýba ID zápasu");
+    return;
   }
+
+  const referee = document.getElementById("referee").value;
+  const doctor = document.getElementById("doctor").value;
+  const notes = document.getElementById("notes").value;
+
+  try {
+    await fetch(
+      "https://Lucifer21sk.pythonanywhere.com/matches/report",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          match_id: matchId,
+          referee: referee,
+          doctor: doctor,
+          notes: notes
+        })
+      }
+    );
+
+    // End of whole flow → back to start
+    window.location.href = "select_teams.html";
+
+  } catch (err) {
+    console.error("Saving match report failed", err);
+    alert("Nepodarilo sa uložiť zápis zápasu");
+  }
+}
 </script>
 
 </body>
