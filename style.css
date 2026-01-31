@@ -368,7 +368,7 @@ input[type="checkbox"] {
 /* SAVE BUTTON */
 
 .post-save-btn {
-  margin-top: auto;
+  margin-bottom: auto;
   align-self: center;
   font-size: 26px;
   padding: 18px 60px;
