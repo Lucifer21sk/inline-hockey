@@ -35,7 +35,7 @@
       Normálny čas
     </div>
 
-    <div class="phase-buttons">
+    <div class="phase-buttons center-phase-buttons">
       <button onclick="startOvertime()">Predĺženie</button>
       <button onclick="startShootout()">Trestné strieľania</button>
     </div>
@@ -136,18 +136,18 @@ const penaltyModal = document.getElementById("penaltyModal");
 function updatePhaseUI() {
   const phaseLabel = document.getElementById("matchPhase");
 
-  if (currentPhase === "normal") phaseLabel.innerText = "NORMAL TIME";
-  if (currentPhase === "overtime") phaseLabel.innerText = "OVERTIME";
-  if (currentPhase === "shootout") phaseLabel.innerText = "SHOOTOUT";
+  if (currentPhase === "normal") phaseLabel.innerText = "Normálny čas";
+  if (currentPhase === "overtime") phaseLabel.innerText = "Predĺženie";
+  if (currentPhase === "shootout") phaseLabel.innerText = "Trestné strieľania";
 }
 
 function startOvertime() {
-  currentPhase = "overtime";
+  currentPhase = "Predĺženie";
   updatePhaseUI();
 }
 
 function startShootout() {
-  currentPhase = "shootout";
+  currentPhase = "Trestné strieľania";
   updatePhaseUI();
 }
 
