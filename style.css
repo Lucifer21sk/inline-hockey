@@ -221,6 +221,14 @@ input[type="checkbox"] {
   border-radius: 12px;
 }
 
+.phase-overtime {
+  background: #ff9800; /* orange */
+}
+
+.phase-shootout {
+  background: #f44336; /* red */
+}
+
 /* ===== MODALS ===== */
 
 .modal {
