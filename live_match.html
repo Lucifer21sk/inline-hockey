@@ -134,6 +134,8 @@ let activeTeam = null;
 
 let currentPhase = "normal"; // normal, overtime, shootout
 
+let matchId = null;
+
 const goalModal = document.getElementById("goalModal");
 const penaltyModal = document.getElementById("penaltyModal");
 
@@ -198,6 +200,7 @@ async function loadTeamLogos() {
 
     teamsLoaded = true;
     console.log("Teams loaded:", homeTeam.id, awayTeam.id);
+    createMatch();
 
   } catch (err) {
     console.error("Failed to load teams", err);
@@ -205,6 +208,35 @@ async function loadTeamLogos() {
 }
 
 loadTeamLogos();
+
+async function createMatch() {
+  try {
+    const res = await fetch(
+      "https://Lucifer21sk.pythonanywhere.com/matches/create",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          home_team_id: homeTeamId,
+          away_team_id: awayTeamId
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.status === "ok") {
+      matchId = data.match_id;
+      console.log("Match created:", matchId);
+    }
+
+  } catch (err) {
+    console.error("Match create failed", err);
+  }
+}
+
 
 /* =========================
    MODAL HANDLING
@@ -265,7 +297,7 @@ async function confirmGoal() {
   const teamId = activeTeam === "home" ? homeTeamId : awayTeamId;
 
   const payload = {
-    match_id: 1,
+    match_id: matchId,
     team_id: teamId,
     scorer_number: Number(scorer),
     assist1_number: assist1 ? Number(assist1) : null,
@@ -306,7 +338,7 @@ async function confirmGoal() {
 }
 
 /* =========================
-   CONFIRM PENALTY (UNCHANGED)
+   CONFIRM PENALTY 
    ========================= */
 async function confirmPenalty() {
   const minute = document.getElementById("penaltyTime").value;
@@ -326,7 +358,7 @@ async function confirmPenalty() {
   const teamId = activeTeam === "home" ? homeTeamId : awayTeamId;
 
   const payload = {
-    match_id: 1,
+    match_id: matchId,
     team_id: teamId,
     player_number: Number(player),
     minute: minute,
