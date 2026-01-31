@@ -122,15 +122,21 @@ input[type="checkbox"] {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  padding-top: 20px;
+  padding-bottom: 140px;
   overflow: hidden;
 }
 
 .team-panel h2 {
   font-size: 38px;
-  margin: 20px 0 150px 0;
+  margin: 20px 0 20px 0;   /* small, controlled spacing */
   z-index: 2;
   text-align: center;
+  max-width: 80%;          /* prevents crazy wrapping width */
+  word-break: break-word; /* breaks long names */
 }
+
 
 .team-logo {
   position: absolute;
@@ -141,11 +147,11 @@ input[type="checkbox"] {
 }
 
 .team-actions {
-  margin-top: 40px;
   display: flex;
   flex-direction: column;
   gap: 40px;
   z-index: 2;
+  margin-bottom: 40px;   /* pushes from bottom instead of name */
 }
 
 .team-actions button {
