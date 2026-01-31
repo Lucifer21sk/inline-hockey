@@ -198,6 +198,29 @@ input[type="checkbox"] {
   box-shadow: 0 0 10px rgba(0,0,0,0.15);
 }
 
+.match-phase {
+  margin-top: 20px;
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.phase-controls {
+  margin-top: 15px;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.phase-controls button {
+  font-size: 18px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #555;
+  color: white;
+}
+
 /* ===== MODALS ===== */
 
 .modal {

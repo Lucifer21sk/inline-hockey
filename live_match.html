@@ -29,6 +29,15 @@
       :
       <span id="awayScore">0</span>
     </div>
+    <div class="match-phase" id="matchPhase">
+      Normálny čas
+    </div>
+
+    <div class="phase-controls">
+      <button onclick="startOvertime()">Predĺženie</button>
+      <button onclick="startShootout()">Trestné strieľania</button>
+    </div>
+
   </div>
 
   <!-- AWAY -->
@@ -116,8 +125,28 @@ let homeScore = 0;
 let awayScore = 0;
 let activeTeam = null;
 
+let currentPhase = "normal"; // normal, overtime, shootout
+
 const goalModal = document.getElementById("goalModal");
 const penaltyModal = document.getElementById("penaltyModal");
+
+function updatePhaseUI() {
+  const phaseLabel = document.getElementById("matchPhase");
+
+  if (currentPhase === "normal") phaseLabel.innerText = "NORMAL TIME";
+  if (currentPhase === "overtime") phaseLabel.innerText = "OVERTIME";
+  if (currentPhase === "shootout") phaseLabel.innerText = "SHOOTOUT";
+}
+
+function startOvertime() {
+  currentPhase = "overtime";
+  updatePhaseUI();
+}
+
+function startShootout() {
+  currentPhase = "shootout";
+  updatePhaseUI();
+}
 
 /* =========================
    LOAD TEAM NAMES + LOGOS
