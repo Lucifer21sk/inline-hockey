@@ -181,44 +181,44 @@ input[type="checkbox"] {
   border: none;
 }
 
-.center-panel {
-  width: 240px;
+.center-stack {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 20px;
 }
 
-.scoreboard {
-  margin-top: 110px;
-  font-size: 44px;
+/* SCORE */
+.score-box {
+  font-size: 72px;
   font-weight: bold;
   background: white;
   padding: 20px 40px;
-  border-radius: 20px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+  border-radius: 18px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
 }
 
+/* PHASE TEXT */
 .match-phase {
-  margin-top: 20px;
   font-size: 22px;
-  font-weight: bold;
-  text-align: center;
+  font-weight: 600;
+  color: #333;
 }
 
-.phase-controls {
-  margin-top: 15px;
+/* PHASE BUTTONS */
+.phase-buttons {
   display: flex;
   gap: 15px;
-  justify-content: center;
 }
 
-.phase-controls button {
-  font-size: 18px;
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
+.phase-buttons button {
   background: #555;
   color: white;
+  border: none;
+  padding: 14px 22px;
+  font-size: 18px;
+  border-radius: 12px;
 }
 
 /* ===== MODALS ===== */
