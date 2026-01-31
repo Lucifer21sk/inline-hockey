@@ -140,10 +140,29 @@ const penaltyModal = document.getElementById("penaltyModal");
 function updatePhaseUI() {
   const phaseLabel = document.getElementById("matchPhase");
 
-  if (currentPhase === "normal") phaseLabel.innerText = "Normálny čas";
-  if (currentPhase === "Predĺženie") phaseLabel.innerText = "Predĺženie";
-  if (currentPhase === "Trestné strieľania") phaseLabel.innerText = "Trestné strieľania";
+  // reset classes
+  phaseLabel.classList.remove(
+    "phase-normal",
+    "phase-overtime",
+    "phase-shootout"
+  );
+
+  if (currentPhase === "normal") {
+    phaseLabel.innerText = "Normálny čas";
+    phaseLabel.classList.add("phase-normal");
+  }
+
+  if (currentPhase === "Predĺženie") {
+    phaseLabel.innerText = "Predĺženie";
+    phaseLabel.classList.add("phase-overtime");
+  }
+
+  if (currentPhase === "Trestné strieľania") {
+    phaseLabel.innerText = "Trestné strieľania";
+    phaseLabel.classList.add("phase-shootout");
+  }
 }
+
 
 function startOvertime() {
   currentPhase = "Predĺženie";

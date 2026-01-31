@@ -205,7 +205,7 @@ input[type="checkbox"] {
 
 /* SCORE */
 .score-box {
-  font-size: 72px;
+  font-size: 52px;
   font-weight: bold;
   background: white;
   padding: 20px 40px;
@@ -235,6 +235,10 @@ input[type="checkbox"] {
   padding: 14px 22px;
   font-size: 18px;
   border-radius: 12px;
+}
+
+.phase-normal {
+  background: #4caf50; /* green */
 }
 
 .phase-overtime {
