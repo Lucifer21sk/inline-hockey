@@ -221,14 +221,43 @@ function updatePhaseUI() {
   }
 }
 
+/* =========================
+   CHANGE PHASE (AND SAVE TO SERVER)
+   ========================= */
+async function setPhase(newPhase) {
+  if (!matchId) return;
+
+  // 1. Tell the Server
+  try {
+      await fetch("https://Lucifer21sk.pythonanywhere.com/matches/phase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+              match_id: matchId,
+              phase: newPhase
+          })
+      });
+
+      // 2. Update the Screen (only if server didn't fail)
+      currentPhase = newPhase;
+      updatePhaseUI();
+
+  } catch (err) {
+      console.error("Failed to update phase:", err);
+      alert("Chyba: Nepodarilo sa zmeniť fázu zápasu.");
+  }
+}
+
 function startOvertime() {
-  currentPhase = "overtime";
-  updatePhaseUI();
+    if(confirm("Prepnúť na Predĺženie?")) {
+        setPhase("overtime");
+    }
 }
 
 function startShootout() {
-  currentPhase = "shootout";
-  updatePhaseUI();
+    if(confirm("Prepnúť na Trestné strieľania?")) {
+        setPhase("shootout");
+    }
 }
 
 /* =========================
