@@ -105,24 +105,18 @@
 </div>
 
 <script>
-
-function clearGoalModal() {
-  document.getElementById("goalTime").value = "";
-  document.getElementById("goalScorer").value = "";
-  document.getElementById("goalAssist1").value = "";
-  document.getElementById("goalAssist2").value = "";
-}
-
-function clearPenaltyModal() {
-  document.getElementById("penaltyTime").value = "";
-  document.getElementById("penaltyPlayer").value = "";
-  document.getElementById("penaltyType").value = "";
-}
-
+/* =========================
+   GLOBAL VARIABLES & SETUP
+   ========================= */
 const params = new URLSearchParams(window.location.search);
+const matchId = params.get("match"); 
+const homeTeamId = params.get("home");
+const awayTeamId = params.get("away");
 
-const homeTeamId = Number(params.get("home"));
-const awayTeamId = Number(params.get("away"));
+// Safety Check
+if (!matchId) {
+    alert("Chyba: Nie je zadané ID zápasu. Vráťte sa na výber tímov.");
+}
 
 let homeTeam = null;
 let awayTeam = null;
@@ -134,37 +128,98 @@ let activeTeam = null;
 
 let currentPhase = "normal"; // normal, overtime, shootout
 
-let matchId = null;
-
 const goalModal = document.getElementById("goalModal");
 const penaltyModal = document.getElementById("penaltyModal");
 
+/* =========================
+   INITIALIZATION (ON LOAD)
+   ========================= */
+window.onload = async () => {
+    // 1. Load Team Logos & Names
+    await loadTeamLogos();
+
+    // 2. Restore Score from Server (Safety Refresh)
+    if (matchId) {
+        await restoreMatchState();
+    }
+};
+
+/* =========================
+   1. RESTORE STATE (REFRESH SAFETY)
+   ========================= */
+async function restoreMatchState() {
+  try {
+    const res = await fetch(`https://Lucifer21sk.pythonanywhere.com/matches/${matchId}/score`);
+    const data = await res.json();
+
+    if (data.status === "ok") {
+      // Update Variables
+      homeScore = data.home_goals;
+      awayScore = data.away_goals;
+      currentPhase = data.phase; 
+
+      // Update Scoreboard
+      document.getElementById("homeScore").textContent = homeScore;
+      document.getElementById("awayScore").textContent = awayScore;
+
+      // Update Phase Text
+      updatePhaseUI();
+      
+      console.log("Match state restored:", data);
+    }
+  } catch (err) {
+    console.error("Failed to restore match state:", err);
+  }
+}
+
+/* =========================
+   2. LOAD TEAMS
+   ========================= */
+async function loadTeamLogos() {
+  try {
+    const res = await fetch("https://Lucifer21sk.pythonanywhere.com/teams");
+    const teams = await res.json();
+
+    // Convert IDs to strings for comparison if needed, or keep loose equality
+    homeTeam = teams.find(t => String(t.id) === String(homeTeamId));
+    awayTeam = teams.find(t => String(t.id) === String(awayTeamId));
+
+    if (!homeTeam || !awayTeam) {
+      console.error("Team IDs not found", homeTeamId, awayTeamId);
+      return;
+    }
+
+    document.getElementById("homeName").innerText = homeTeam.name;
+    document.getElementById("awayName").innerText = awayTeam.name;
+    document.getElementById("homeLogo").src = "logos/" + homeTeam.logo;
+    document.getElementById("awayLogo").src = "logos/" + awayTeam.logo;
+
+    teamsLoaded = true;
+  } catch (err) {
+    console.error("Failed to load teams", err);
+  }
+}
+
+/* =========================
+   3. PHASE MANAGEMENT
+   ========================= */
 function updatePhaseUI() {
   const phaseLabel = document.getElementById("matchPhase");
-
-  // reset classes
-  phaseLabel.classList.remove(
-    "phase-normal",
-    "phase-overtime",
-    "phase-shootout"
-  );
+  
+  // Clear old classes
+  phaseLabel.classList.remove("phase-normal", "phase-overtime", "phase-shootout");
 
   if (currentPhase === "normal") {
     phaseLabel.innerText = "Normálny čas";
     phaseLabel.classList.add("phase-normal");
-  }
-
-  if (currentPhase === "overtime") {
+  } else if (currentPhase === "overtime") {
     phaseLabel.innerText = "Predĺženie";
     phaseLabel.classList.add("phase-overtime");
-  }
-
-  if (currentPhase === "shootout") {
+  } else if (currentPhase === "shootout") {
     phaseLabel.innerText = "Trestné strieľania";
     phaseLabel.classList.add("phase-shootout");
   }
 }
-
 
 function startOvertime() {
   currentPhase = "overtime";
@@ -177,69 +232,7 @@ function startShootout() {
 }
 
 /* =========================
-   LOAD TEAM NAMES + LOGOS
-   ========================= */
-async function loadTeamLogos() {
-  try {
-    const res = await fetch("https://Lucifer21sk.pythonanywhere.com/teams");
-    const teams = await res.json();
-
-    homeTeam = teams.find(t => t.id === homeTeamId);
-    awayTeam = teams.find(t => t.id === awayTeamId);
-
-    if (!homeTeam || !awayTeam) {
-      console.error("Team IDs not found", homeTeamId, awayTeamId);
-      return;
-    }
-
-    document.getElementById("homeName").innerText = homeTeam.name;
-    document.getElementById("awayName").innerText = awayTeam.name;
-
-    document.getElementById("homeLogo").src = "logos/" + homeTeam.logo;
-    document.getElementById("awayLogo").src = "logos/" + awayTeam.logo;
-
-    teamsLoaded = true;
-    console.log("Teams loaded:", homeTeam.id, awayTeam.id);
-    createMatch();
-
-  } catch (err) {
-    console.error("Failed to load teams", err);
-  }
-}
-
-loadTeamLogos();
-
-async function createMatch() {
-  try {
-    const res = await fetch(
-      "https://Lucifer21sk.pythonanywhere.com/matches/create",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          home_team_id: homeTeamId,
-          away_team_id: awayTeamId
-        })
-      }
-    );
-
-    const data = await res.json();
-
-    if (data.status === "ok") {
-      matchId = data.match_id;
-      console.log("Match created:", matchId);
-    }
-
-  } catch (err) {
-    console.error("Match create failed", err);
-  }
-}
-
-
-/* =========================
-   MODAL HANDLING
+   4. MODALS & INPUTS
    ========================= */
 function openGoal(team) {
   activeTeam = team;
@@ -256,12 +249,22 @@ function closeModal() {
   penaltyModal.classList.remove("active");
 }
 
-/* =========================
-   AUTO FORMAT TIME INPUT
-   ========================= */
+function clearGoalModal() {
+  document.getElementById("goalTime").value = "";
+  document.getElementById("goalScorer").value = "";
+  document.getElementById("goalAssist1").value = "";
+  document.getElementById("goalAssist2").value = "";
+}
+
+function clearPenaltyModal() {
+  document.getElementById("penaltyTime").value = "";
+  document.getElementById("penaltyPlayer").value = "";
+  document.getElementById("penaltyType").value = "";
+}
+
+// Auto-format time inputs (0430 -> 04:30)
 function setupTimeInput(id) {
   const input = document.getElementById(id);
-
   input.addEventListener("input", () => {
     let digits = input.value.replace(/\D/g, "").slice(0, 4);
     if (digits.length >= 3) {
@@ -271,12 +274,11 @@ function setupTimeInput(id) {
     }
   });
 }
-
 setupTimeInput("goalTime");
 setupTimeInput("penaltyTime");
 
 /* =========================
-   CONFIRM GOAL (NEW)
+   5. ACTIONS (GOAL & PENALTY)
    ========================= */
 async function confirmGoal() {
   const minute = document.getElementById("goalTime").value;
@@ -290,7 +292,7 @@ async function confirmGoal() {
   }
 
   if (!teamsLoaded) {
-    alert("Tímy sa ešte načítavajú, počkaj sekundu...");
+    alert("Tímy sa ešte načítavajú...");
     return;
   }
 
@@ -315,7 +317,7 @@ async function confirmGoal() {
     const result = await res.json();
 
     if (result.status === "ok") {
-      // update score ONLY after server success
+      // Update UI locally immediately
       if (activeTeam === "home") {
         homeScore++;
         document.getElementById("homeScore").textContent = homeScore;
@@ -327,7 +329,6 @@ async function confirmGoal() {
       clearGoalModal();
       closeModal();
     } else {
-      console.error("Server error", result);
       alert("Chyba pri ukladaní gólu");
     }
 
@@ -337,9 +338,6 @@ async function confirmGoal() {
   }
 }
 
-/* =========================
-   CONFIRM PENALTY 
-   ========================= */
 async function confirmPenalty() {
   const minute = document.getElementById("penaltyTime").value;
   const player = document.getElementById("penaltyPlayer").value;
@@ -347,11 +345,6 @@ async function confirmPenalty() {
 
   if (!minute || !player || !type) {
     alert("Vyplň všetky polia");
-    return;
-  }
-
-  if (!teamsLoaded) {
-    alert("Tímy sa ešte načítavajú, počkaj sekundu...");
     return;
   }
 
@@ -373,43 +366,38 @@ async function confirmPenalty() {
     });
 
     const result = await res.json();
-
     if (result.status === "ok") {
       clearPenaltyModal();
       closeModal();
     } else {
-      console.error("Server error", result);
+      alert("Chyba servera pri treste");
     }
 
   } catch (err) {
     console.error(err);
-    alert("Chyba spojenia so serverom");
+    alert("Chyba spojenia");
   }
 }
 
 /* =========================
-   END MATCH
+   6. END MATCH
    ========================= */
 async function endMatch() {
+  if (!confirm("Naozaj ukončiť zápas?")) return;
+
+  let winner = null;
+  if (homeScore > awayScore) winner = homeTeamId;
+  if (awayScore > homeScore) winner = awayTeamId;
+
+  if (!winner) {
+    alert("Remíza nie je možná — musí byť víťaz");
+    return;
+  }
+
   try {
-
-    let winner = null;
-
-    if (homeScore > awayScore) winner = homeTeamId;
-    if (awayScore > homeScore) winner = awayTeamId;
-
-    if (!winner) {
-      alert("Remíza nie je možná — musí byť víťaz");
-      return;
-    }
-
-    await fetch(
-      "https://Lucifer21sk.pythonanywhere.com/matches/end",
-      {
+    await fetch("https://Lucifer21sk.pythonanywhere.com/matches/end", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           match_id: matchId,
           winner_team_id: winner,
@@ -417,58 +405,12 @@ async function endMatch() {
         })
       }
     );
-
     window.location.href = "post_match.html?match=" + matchId;
-
   } catch (err) {
     console.error("End match failed", err);
+    alert("Nepodarilo sa ukončiť zápas");
   }
 }
-
-/* =========================
-   RESTORE SCORE LOGIC
-   ========================= */
-async function restoreMatchState() {
-  if (!matchId) return; // Safety check
-
-  try {
-    const res = await fetch(`https://Lucifer21sk.pythonanywhere.com/matches/${matchId}/score`);
-    const data = await res.json();
-
-    if (data.status === "ok") {
-      // 1. Update Variables
-      homeScore = data.home_goals;
-      awayScore = data.away_goals;
-      currentPhase = data.phase; // "normal", "overtime", "shootout"
-
-      // 2. Update Screen Text
-      document.getElementById("homeScore").textContent = homeScore;
-      document.getElementById("awayScore").textContent = awayScore;
-
-      // 3. Update Phase Text (translate back to Slovak for display)
-      const phaseTextMap = {
-        "normal": "Normálny čas",
-        "overtime": "Predĺženie",
-        "shootout": "Trestné strieľania"
-      };
-      document.getElementById("matchPhase").textContent = phaseTextMap[currentPhase] || "Normálny čas";
-      
-      console.log("Match state restored:", data);
-    }
-
-  } catch (err) {
-    console.error("Failed to restore match state:", err);
-  }
-}
-
-// RUN THIS AUTOMATICALLY WHEN PAGE LOADS
-window.addEventListener("load", () => {
-   // Existing logic to load logos is likely here
-   if (matchId) {
-       restoreMatchState();
-   }
-});
-
 </script>
 
 

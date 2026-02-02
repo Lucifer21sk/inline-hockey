@@ -30,7 +30,7 @@
     Pokračovať
   </button>
 
-  <script>
+<script>
     const params = new URLSearchParams(window.location.search);
     const homeTeamId = params.get("home");
     const awayTeamId = params.get("away");
@@ -38,46 +38,73 @@
     const tbody = document.getElementById("playersBody");
     const continueBtn = document.getElementById("continueBtn");
 
+    // 1. Check if we have enough players
     function updateButtonState() {
-      const checked =
-        document.querySelectorAll('input[type="checkbox"]:checked');
+      const checked = document.querySelectorAll('input[type="checkbox"]:checked');
       continueBtn.disabled = checked.length < 5;
     }
 
+    // 2. Load players from DB
     async function loadPlayers() {
-      const res = await fetch(
-        "https://lucifer21sk.pythonanywhere.com/players/" + awayTeamId
-      );
-      const players = await res.json();
+      try {
+          const res = await fetch("https://Lucifer21sk.pythonanywhere.com/players/" + awayTeamId);
+          const players = await res.json();
 
-      tbody.innerHTML = "";
+          tbody.innerHTML = "";
 
-      players.forEach(player => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>
-            <input type="checkbox" class="player-checkbox">
-          </td>
-          <td>${player.name}</td>
-          <td>${player.number}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+          players.forEach(player => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td><input type="checkbox" class="player-checkbox"></td>
+              <td>${player.name}</td>
+              <td>${player.number}</td>
+            `;
+            tbody.appendChild(tr);
+          });
 
-      document
-        .querySelectorAll(".player-checkbox")
-        .forEach(cb =>
-          cb.addEventListener("change", updateButtonState)
-        );
+          document.querySelectorAll(".player-checkbox").forEach(cb =>
+              cb.addEventListener("change", updateButtonState)
+          );
+      } catch (err) {
+          console.error(err);
+          alert("Chyba pri načítaní hráčov.");
+      }
     }
 
-    continueBtn.addEventListener("click", () => {
-      window.location.href =
-        `live_match.html?home=${homeTeamId}&away=${awayTeamId}`;
+    // 3. CREATE MATCH AND START (The New Logic)
+    continueBtn.addEventListener("click", async () => {
+        continueBtn.disabled = true; // Prevent double clicks
+        continueBtn.textContent = "Zakladám zápas...";
+
+        try {
+            const response = await fetch("https://Lucifer21sk.pythonanywhere.com/matches/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    home_team_id: homeTeamId,
+                    away_team_id: awayTeamId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === "ok") {
+                // SUCCESS! Go to live match with the specific ID
+                window.location.href = `live_match.html?match=${data.match_id}&home=${homeTeamId}&away=${awayTeamId}`;
+            } else {
+                alert("Chyba pri vytváraní zápasu.");
+                continueBtn.disabled = false;
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Chyba siete.");
+            continueBtn.disabled = false;
+        }
     });
 
+    // Load immediately
     loadPlayers();
-  </script>
+</script>
 
 </body>
 </html>
