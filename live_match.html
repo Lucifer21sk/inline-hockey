@@ -242,6 +242,7 @@ async function setPhase(newPhase) {
       // 2. Update the Screen (only if server didn't fail)
       currentPhase = newPhase;
       updatePhaseUI();
+      updateButtonVisibility();
 
   } catch (err) {
       console.error("Failed to update phase:", err);
