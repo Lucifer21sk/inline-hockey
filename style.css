@@ -237,6 +237,13 @@ input[type="checkbox"] {
   border-radius: 12px;
 }
 
+button:disabled {
+  background: #aaa;
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+}
+
 .phase-normal {
   background: #4caf50; /* green */
 }

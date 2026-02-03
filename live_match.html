@@ -38,8 +38,8 @@
     </div>
 
     <div class="phase-buttons center-phase-buttons">
-      <button onclick="startOvertime()">Predĺženie</button>
-      <button onclick="startShootout()">Trestné strieľania</button>
+      <button id="btnOvertime" onclick="startOvertime()" disabled>Predĺženie</button>
+      <button id="btnShootout" onclick="startShootout()" style="display: none;">Trestné strieľania</button>
     </div>
 
   </div>
@@ -257,6 +257,28 @@ function startOvertime() {
 function startShootout() {
     if(confirm("Prepnúť na Trestné strieľania?")) {
         setPhase("shootout");
+    }
+}
+
+/* =========================
+   BUTTON VISIBILITY LOGIC
+   ========================= */
+function updateButtonVisibility() {
+    const btnOvertime = document.getElementById("btnOvertime");
+    const btnShootout = document.getElementById("btnShootout");
+
+    // 1. SHOOTOUT: Show only in Overtime
+    if (currentPhase === "overtime") {
+        btnShootout.style.display = "inline-block";
+    } else {
+        btnShootout.style.display = "none";
+    }
+
+    // 2. OVERTIME: Enable only if Normal Time AND Draw
+    if (currentPhase === "normal" && homeScore === awayScore) {
+        btnOvertime.disabled = false; // CSS makes it bright
+    } else {
+        btnOvertime.disabled = true;  // CSS makes it gray
     }
 }
 
