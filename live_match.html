@@ -264,27 +264,45 @@ function startShootout() {
 /* =========================
    BUTTON VISIBILITY LOGIC
    ========================= */
+/* =========================
+   BUTTON VISIBILITY LOGIC (FINAL)
+   ========================= */
 function updateButtonVisibility() {
     const btnOvertime = document.getElementById("btnOvertime");
     const btnShootout = document.getElementById("btnShootout");
 
-    // Ensure we are comparing numbers
     const h = Number(homeScore);
     const a = Number(awayScore);
+    const isDraw = (h === a);
 
-    // 1. SHOOTOUT: Show only in Overtime
-    if (currentPhase === "overtime") {
+    // 1. Reset: Hide both by default
+    btnOvertime.style.display = "none";
+    btnShootout.style.display = "none";
+
+    // 2. Logic based on Phase
+    if (currentPhase === "normal") {
+        // Show Overtime Button
+        btnOvertime.style.display = "inline-block";
+        
+        // Enable only if Draw
+        if (isDraw) {
+            btnOvertime.disabled = false;
+        } else {
+            btnOvertime.disabled = true;
+        }
+    } 
+    else if (currentPhase === "overtime") {
+        // Show Shootout Button
         btnShootout.style.display = "inline-block";
-    } else {
-        btnShootout.style.display = "none";
-    }
 
-    // 2. OVERTIME: Enable only if Normal Time AND Draw
-    if (currentPhase === "normal" && h === a) {
-        btnOvertime.disabled = false; // Bright & Clickable
-    } else {
-        btnOvertime.disabled = true;  // Gray & Unclickable
+        // Enable only if Draw
+        if (isDraw) {
+            btnShootout.disabled = false;
+        } else {
+            btnShootout.disabled = true;
+        }
     }
+    // If phase is 'shootout', both remain hidden
 }
 
 /* =========================
