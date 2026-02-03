@@ -164,6 +164,7 @@ async function restoreMatchState() {
 
       // Update Phase Text
       updatePhaseUI();
+      updateButtonVisibility
       
       console.log("Match state restored:", data);
     }
@@ -267,6 +268,10 @@ function updateButtonVisibility() {
     const btnOvertime = document.getElementById("btnOvertime");
     const btnShootout = document.getElementById("btnShootout");
 
+    // Ensure we are comparing numbers
+    const h = Number(homeScore);
+    const a = Number(awayScore);
+
     // 1. SHOOTOUT: Show only in Overtime
     if (currentPhase === "overtime") {
         btnShootout.style.display = "inline-block";
@@ -275,10 +280,10 @@ function updateButtonVisibility() {
     }
 
     // 2. OVERTIME: Enable only if Normal Time AND Draw
-    if (currentPhase === "normal" && homeScore === awayScore) {
-        btnOvertime.disabled = false; // CSS makes it bright
+    if (currentPhase === "normal" && h === a) {
+        btnOvertime.disabled = false; // Bright & Clickable
     } else {
-        btnOvertime.disabled = true;  // CSS makes it gray
+        btnOvertime.disabled = true;  // Gray & Unclickable
     }
 }
 
@@ -377,6 +382,7 @@ async function confirmGoal() {
         document.getElementById("awayScore").textContent = awayScore;
       }
 
+      updateButtonVisibility();
       clearGoalModal();
       closeModal();
     } else {
