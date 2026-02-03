@@ -164,7 +164,7 @@ async function restoreMatchState() {
 
       // Update Phase Text
       updatePhaseUI();
-      updateButtonVisibility
+      updateButtonVisibility();
       
       console.log("Match state restored:", data);
     }
@@ -262,10 +262,7 @@ function startShootout() {
 }
 
 /* =========================
-   BUTTON VISIBILITY LOGIC
-   ========================= */
-/* =========================
-   BUTTON VISIBILITY LOGIC (FINAL)
+   BUTTON VISIBILITY LOGIC 
    ========================= */
 function updateButtonVisibility() {
     const btnOvertime = document.getElementById("btnOvertime");
