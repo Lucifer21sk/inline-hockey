@@ -19,8 +19,9 @@
     <div class="team-spacer"></div>
 
     <div class="team-actions">
-      <button class="goal-btn" onclick="openGoal('home')">Gól</button>
-      <button class="penalty-btn" onclick="openPenalty('home')">Trest</button>
+      <button id="homeGoalBtn" class="goal-btn" onclick="openGoal('home')">Gól</button>
+      <button id="homePenaltyBtn" class="penalty-btn" onclick="openPenalty('home')">Trest</button>
+      <button id="homeShootoutBtn" class="goal-btn" style="display:none; background-color: #9c27b0;" onclick="addShootoutGoal('home')">Nájazd Gól</button>
     </div>
   </div>
 
@@ -53,8 +54,9 @@
     <div class="team-spacer"></div>
 
     <div class="team-actions">
-      <button class="goal-btn" onclick="openGoal('away')">Gól</button>
-      <button class="penalty-btn" onclick="openPenalty('away')">Trest</button>
+      <button id="awayGoalBtn" class="goal-btn" onclick="openGoal('away')">Gól</button>
+      <button id="awayPenaltyBtn" class="penalty-btn" onclick="openPenalty('away')">Trest</button>
+      <button id="awayShootoutBtn" class="goal-btn" style="display:none; background-color: #9c27b0;" onclick="addShootoutGoal('home')">Nájazd Gól</button>
     </div>
   </div>
 
@@ -124,6 +126,8 @@ let teamsLoaded = false;
 
 let homeScore = 0;
 let awayScore = 0;
+let soHomeScore = 0; // Shootout goals
+let soAwayScore = 0;
 let activeTeam = null;
 
 let currentPhase = "normal"; // normal, overtime, shootout
@@ -148,29 +152,25 @@ window.onload = async () => {
    1. RESTORE STATE (REFRESH SAFETY)
    ========================= */
 async function restoreMatchState() {
+  if (!matchId) return;
+
   try {
     const res = await fetch(`https://Lucifer21sk.pythonanywhere.com/matches/${matchId}/score`);
     const data = await res.json();
 
     if (data.status === "ok") {
-      // Update Variables
       homeScore = data.home_goals;
       awayScore = data.away_goals;
+      soHomeScore = data.home_so; // Load SO history
+      soAwayScore = data.away_so; // Load SO history
       currentPhase = data.phase; 
 
-      // Update Scoreboard
-      document.getElementById("homeScore").textContent = homeScore;
-      document.getElementById("awayScore").textContent = awayScore;
-
-      // Update Phase Text
-      updatePhaseUI();
-      updateButtonVisibility();
-      
-      console.log("Match state restored:", data);
+      updateScoreBoard();   // Show correct numbers
+      updateControls();     // Show correct buttons
+      updatePhaseUI();      // Update text
+      updateButtonVisibility(); // Phase buttons logic
     }
-  } catch (err) {
-    console.error("Failed to restore match state:", err);
-  }
+  } catch (err) { console.error(err); }
 }
 
 /* =========================
@@ -244,6 +244,9 @@ async function setPhase(newPhase) {
       updatePhaseUI();
       updateButtonVisibility();
 
+      updateControls(); // Show/hide goal/penalty buttons based on phase
+      updateScoreBoard(); // Show correct score (SO vs normal)
+
   } catch (err) {
       console.error("Failed to update phase:", err);
       alert("Chyba: Nepodarilo sa zmeniť fázu zápasu.");
@@ -301,6 +304,69 @@ function updateButtonVisibility() {
         }
     }
     // If phase is 'shootout', both remain hidden
+}
+
+/* =========================
+   UI UPDATER (Buttons & Score)
+   ========================= */
+function updateScoreBoard() {
+    // 1. Decide which score to show
+    if (currentPhase === "shootout") {
+        document.getElementById("homeScore").textContent = soHomeScore;
+        document.getElementById("awayScore").textContent = soAwayScore;
+        document.getElementById("matchPhase").textContent = "Nájazdy"; // Visual cue
+    } else {
+        document.getElementById("homeScore").textContent = homeScore;
+        document.getElementById("awayScore").textContent = awayScore;
+    }
+}
+
+function updateControls() {
+    const isShootout = (currentPhase === "shootout");
+
+    // Toggle Home Buttons
+    document.getElementById("homeGoalBtn").style.display = isShootout ? "none" : "inline-block";
+    document.getElementById("homePenaltyBtn").style.display = isShootout ? "none" : "inline-block";
+    document.getElementById("homeShootoutBtn").style.display = isShootout ? "inline-block" : "none";
+
+    // Toggle Away Buttons
+    document.getElementById("awayGoalBtn").style.display = isShootout ? "none" : "inline-block";
+    document.getElementById("awayPenaltyBtn").style.display = isShootout ? "none" : "inline-block";
+    document.getElementById("awayShootoutBtn").style.display = isShootout ? "inline-block" : "none";
+}
+
+async function addShootoutGoal(team) {
+    if (!confirm("Potvrdiť gól z nájazdu?")) return;
+
+    const teamId = (team === "home") ? homeTeamId : awayTeamId;
+
+    // Send generic "SO" goal
+    try {
+        const res = await fetch("https://Lucifer21sk.pythonanywhere.com/goal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                match_id: matchId,
+                team_id: teamId,
+                scorer_number: 0,   // Dummy number
+                minute: "SO",       // Special marker
+                assist1_number: null,
+                assist2_number: null
+            })
+        });
+        
+        const result = await res.json();
+        if (result.status === "ok") {
+            // Update Local SO Score
+            if (team === "home") soHomeScore++;
+            else soAwayScore++;
+            
+            updateScoreBoard(); // Refresh display
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Chyba spojenia");
+    }
 }
 
 /* =========================
@@ -458,30 +524,65 @@ async function confirmPenalty() {
 async function endMatch() {
   if (!confirm("Naozaj ukončiť zápas?")) return;
 
-  let winner = null;
-  if (homeScore > awayScore) winner = homeTeamId;
-  if (awayScore > homeScore) winner = awayTeamId;
+  let winnerId = null;
+  let winningGoalTeam = null;
 
-  if (!winner) {
-    alert("Remíza nie je možná — musí byť víťaz");
-    return;
+  // 1. Determine Winner
+  if (currentPhase === "shootout") {
+      // Logic: Compare SO score
+      if (soHomeScore > soAwayScore) {
+          winnerId = homeTeamId;
+          winningGoalTeam = "home";
+      } else if (soAwayScore > soHomeScore) {
+          winnerId = awayTeamId;
+          winningGoalTeam = "away";
+      } else {
+          alert("V nájazdoch nemôže byť remíza!");
+          return;
+      }
+  } else {
+      // Normal Logic
+      if (homeScore > awayScore) winnerId = homeTeamId;
+      if (awayScore > homeScore) winnerId = awayTeamId;
   }
 
+  if (!winnerId) {
+      alert("Remíza nie je možná.");
+      return;
+  }
+
+  // 2. IF SHOOTOUT: Add the +1 Winning Goal to DB
+  if (currentPhase === "shootout") {
+      try {
+          await fetch("https://Lucifer21sk.pythonanywhere.com/goal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                match_id: matchId,
+                team_id: winnerId,
+                scorer_number: 0,
+                minute: "GWG", // Game Winning Goal
+                assist1_number: null,
+                assist2_number: null
+            })
+        });
+      } catch (e) { console.error("Failed to add winning goal"); }
+  }
+
+  // 3. End the Match
   try {
     await fetch("https://Lucifer21sk.pythonanywhere.com/matches/end", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           match_id: matchId,
-          winner_team_id: winner,
+          winner_team_id: winnerId,
           phase: currentPhase
         })
-      }
-    );
+    });
     window.location.href = "post_match.html?match=" + matchId;
   } catch (err) {
     console.error("End match failed", err);
-    alert("Nepodarilo sa ukončiť zápas");
   }
 }
 </script>
