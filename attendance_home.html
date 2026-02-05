@@ -30,7 +30,7 @@
     Pokračovať
   </button>
 
-  <script>
+<script>
     const params = new URLSearchParams(window.location.search);
     const homeTeamId = params.get("home");
     const awayTeamId = params.get("away");
@@ -38,46 +38,67 @@
     const tbody = document.getElementById("playersBody");
     const continueBtn = document.getElementById("continueBtn");
 
+    // 1. Check Button State
     function updateButtonState() {
-      const checked =
-        document.querySelectorAll('input[type="checkbox"]:checked');
+      const checked = document.querySelectorAll('.player-checkbox:checked');
       continueBtn.disabled = checked.length < 5;
     }
 
+    // 2. Load Players (With Editable Input for Number)
     async function loadPlayers() {
-      const res = await fetch(
-        "https://lucifer21sk.pythonanywhere.com/players/" + homeTeamId
-      );
-      const players = await res.json();
+      try {
+          const res = await fetch("https://Lucifer21sk.pythonanywhere.com/players/" + homeTeamId);
+          const players = await res.json();
 
-      tbody.innerHTML = "";
+          tbody.innerHTML = "";
 
-      players.forEach(player => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>
-            <input type="checkbox" class="player-checkbox">
-          </td>
-          <td>${player.name}</td>
-          <td>${player.number}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+          players.forEach(player => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td><input type="checkbox" class="player-checkbox" data-id="${player.id}"></td>
+              <td>${player.name}</td>
+              <td>
+                 <input type="number" class="player-number" value="${player.number}" style="width: 60px; font-size: 18px; padding: 5px;">
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
 
-      document
-        .querySelectorAll(".player-checkbox")
-        .forEach(cb =>
-          cb.addEventListener("change", updateButtonState)
-        );
+          // Add click listeners to checkboxes
+          document.querySelectorAll(".player-checkbox").forEach(cb =>
+              cb.addEventListener("change", updateButtonState)
+          );
+      } catch (err) {
+          console.error(err);
+          alert("Chyba pri načítaní hráčov.");
+      }
     }
 
+    // 3. Save Roster and Continue
     continueBtn.addEventListener("click", () => {
-      window.location.href =
-        `attendance_away.html?home=${homeTeamId}&away=${awayTeamId}`;
+        const selectedPlayers = [];
+
+        document.querySelectorAll(".player-checkbox:checked").forEach(cb => {
+            const row = cb.closest("tr");
+            const pId = cb.getAttribute("data-id");
+            // Grab the number from the input box (in case they changed it)
+            const pNumber = row.querySelector(".player-number").value;
+
+            selectedPlayers.push({
+                player_id: parseInt(pId),
+                number: parseInt(pNumber)
+            });
+        });
+
+        // Save to temporary memory
+        localStorage.setItem("homeRoster", JSON.stringify(selectedPlayers));
+
+        // Go to next page
+        window.location.href = `attendance_away.html?home=${homeTeamId}&away=${awayTeamId}`;
     });
 
     loadPlayers();
-  </script>
+</script>
 
 </body>
 </html>
