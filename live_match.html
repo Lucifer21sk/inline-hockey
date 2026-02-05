@@ -254,15 +254,11 @@ async function setPhase(newPhase) {
 }
 
 function startOvertime() {
-    if(confirm("Prepnúť na Predĺženie?")) {
-        setPhase("overtime");
-    }
+    setPhase("overtime");
 }
 
 function startShootout() {
-    if(confirm("Prepnúť na Trestné strieľania?")) {
-        setPhase("shootout");
-    }
+    setPhase("shootout");
 }
 
 /* =========================
@@ -336,7 +332,6 @@ function updateControls() {
 }
 
 async function addShootoutGoal(team) {
-    if (!confirm("Potvrdiť gól z nájazdu?")) return;
 
     const teamId = (team === "home") ? homeTeamId : awayTeamId;
 
@@ -522,7 +517,6 @@ async function confirmPenalty() {
    6. END MATCH
    ========================= */
 async function endMatch() {
-  if (!confirm("Naozaj ukončiť zápas?")) return;
 
   let winnerId = null;
   let winningGoalTeam = null;
