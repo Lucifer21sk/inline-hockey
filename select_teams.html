@@ -2,121 +2,101 @@
 <html lang="sk">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inline Hokej Zápas</title>
+  <title>Výber Zápasu</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+      body { text-align: center; background: #f4f7f6; }
+      h1 { color: #244b94; margin-top: 30px; }
+      
+      .match-card {
+          background: white;
+          padding: 20px;
+          margin: 15px auto;
+          border-radius: 12px;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          max-width: 600px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-left: 6px solid #244b94;
+          text-align: left;
+      }
+      
+      .match-info { flex-grow: 1; }
+      .date-badge { font-size: 0.85em; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+      .teams-vs { font-size: 1.4em; font-weight: bold; color: #333; }
+      
+      .start-btn {
+          background-color: #28a745;
+          color: white;
+          text-decoration: none;
+          padding: 12px 20px;
+          font-size: 1.1em;
+          border-radius: 8px;
+          font-weight: bold;
+          transition: 0.2s;
+          border: none;
+          cursor: pointer;
+      }
+      .start-btn:hover { background-color: #218838; transform: scale(1.05); }
+
+      .no-matches { color: #999; margin-top: 50px; font-size: 1.2em; }
+  </style>
 </head>
 <body>
 
-  <div class="teams">
-    <div class="team">
-      <h2>DOMÁCI</h2>
-      <select id="homeTeam">
-        <option value="">Vybrať tím</option>
-      </select>
-    </div>
+  <h1>Dnešné Zápasy</h1>
+  
+  <div id="matchesContainer">Načítavam...</div>
 
-    <div class="team">
-      <h2>HOSTIA</h2>
-      <select id="awayTeam">
-        <option value="">Vybrať tím</option>
-      </select>
-    </div>
-  </div>
+<script>
+    const API_BASE = "https://Lucifer21sk.pythonanywhere.com";
 
-  <div class="start">
-    <button id="startBtn" class="action-btn" disabled>✓</button>
-  </div>
+    async function loadMatches() {
+        try {
+            const res = await fetch(`${API_BASE}/matches`);
+            const matches = await res.json();
+            const container = document.getElementById("matchesContainer");
+            
+            // 1. Get Today's Date in YYYY-MM-DD format
+            const today = new Date().toISOString().split('T')[0];
 
-  <script>
-    // =========================
-    // CONFIG
-    // =========================
-    const API_URL = "https://Lucifer21sk.pythonanywhere.com/teams";
+            // 2. Filter: Only matches for TODAY that are NOT finished
+            // 3. Sort: Compare the 'time' property to put earliest first
+            const todayMatches = matches
+                .filter(m => m.date === today && !m.is_finished)
+                .sort((a, b) => a.time.localeCompare(b.time));
 
-    // =========================
-    // DOM ELEMENTS
-    // =========================
-    const homeSelect = document.getElementById("homeTeam");
-    const awaySelect = document.getElementById("awayTeam");
-    const startBtn   = document.getElementById("startBtn");
+            container.innerHTML = "";
+            
+            if (todayMatches.length === 0) {
+                container.innerHTML = `
+                    <div class='no-matches'>
+                        Dnes nie sú naplánované žiadne zápasy.<br>
+                        <small style="color:#888; font-size:0.6em;">Dátum: ${today}</small>
+                    </div>`;
+                return;
+            }
 
-    // =========================
-    // STATE CHECK
-    // =========================
-    function checkReady() {
-      const homeVal = homeSelect.value;
-      const awayVal = awaySelect.value;
-
-      console.log("checkReady:", homeVal, awayVal);
-
-      startBtn.disabled = !(
-        homeVal !== "" &&
-        awayVal !== "" &&
-        homeVal !== awayVal
-      );
-    }
-
-    // =========================
-    // LOAD TEAMS
-    // =========================
-    async function loadTeams() {
-      try {
-        // Reset UI state
-        homeSelect.innerHTML = '<option value="">Vybrať tím</option>';
-        awaySelect.innerHTML = '<option value="">Vybrať tím</option>';
-        startBtn.disabled = true;
-
-        const response = await fetch(API_URL);
-        if (!response.ok) {
-          throw new Error("HTTP error " + response.status);
+            todayMatches.forEach(m => {
+                container.innerHTML += `
+                    <div class="match-card">
+                        <div class="match-info">
+                            <div class="date-badge">🕒 DNES | ${m.time}</div>
+                            <div class="teams-vs">${m.home_team} vs ${m.away_team}</div>
+                        </div>
+                        <a href="attendance_home.html?match_id=${m.id}&home=${m.home_team_id}&away=${m.away_team_id}" class="start-btn">
+                            Štart ►
+                        </a>
+                    </div>
+                `;
+            });
+        } catch (err) {
+            document.getElementById("matchesContainer").innerHTML = "Chyba pripojenia.";
+            console.error(err);
         }
-
-        const teams = await response.json();
-        console.log("Loaded teams:", teams);
-
-        teams.forEach(team => {
-          const optHome = document.createElement("option");
-          optHome.value = String(team.id);   // IDs stay as strings in HTML
-          optHome.textContent = team.name;
-
-          const optAway = document.createElement("option");
-          optAway.value = String(team.id);
-          optAway.textContent = team.name;
-
-          homeSelect.appendChild(optHome);
-          awaySelect.appendChild(optAway);
-        });
-
-      } catch (err) {
-        console.error("Failed to load teams:", err);
-        alert("Nepodarilo sa načítať tímy zo servera");
-      }
     }
-
-    // =========================
-    // EVENT LISTENERS
-    // =========================
-    homeSelect.addEventListener("change", checkReady);
-    awaySelect.addEventListener("change", checkReady);
-
-    startBtn.addEventListener("click", () => {
-      const homeId = homeSelect.value;
-      const awayId = awaySelect.value;
-
-      // Safety guard (should never trigger now)
-      if (!homeId || !awayId || homeId === awayId) {
-        return;
-      }
-
-      window.location.href =
-        `attendance_home.html?home=${homeId}&away=${awayId}`;
-    });
-
-    // =========================
-    // INIT
-    // =========================
-    window.addEventListener("DOMContentLoaded", loadTeams);
+    loadMatches();
   </script>
-
 </body>
 </html>

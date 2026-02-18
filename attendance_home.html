@@ -9,7 +9,6 @@
 
   <h1>DOMÁCI</h1>
 
-  <!-- SCROLLABLE TABLE CONTAINER (REQUIRED BY YOUR CSS) -->
   <div class="table-scroll">
     <table>
       <thead>
@@ -20,12 +19,10 @@
         </tr>
       </thead>
       <tbody id="playersBody">
-        <!-- players injected here -->
-      </tbody>
+        </tbody>
     </table>
   </div>
 
-  <!-- FIXED ACTION BUTTON (ALREADY STYLED) -->
   <button id="continueBtn" class="action-btn" disabled>
     Pokračovať
   </button>
@@ -34,71 +31,50 @@
     const params = new URLSearchParams(window.location.search);
     const homeTeamId = params.get("home");
     const awayTeamId = params.get("away");
+    const matchId = params.get("match_id"); // <--- GET MATCH ID
 
     const tbody = document.getElementById("playersBody");
     const continueBtn = document.getElementById("continueBtn");
 
-    // 1. Check Button State
     function updateButtonState() {
       const checked = document.querySelectorAll('.player-checkbox:checked');
       continueBtn.disabled = checked.length < 5;
     }
 
-    // 2. Load Players (With Editable Input for Number)
     async function loadPlayers() {
       try {
-          const res = await fetch("https://Lucifer21sk.pythonanywhere.com/players/" + homeTeamId);
-          const players = await res.json();
-
+          const response = await fetch(`https://Lucifer21sk.pythonanywhere.com/players/${homeTeamId}`);
+          const players = await response.json();
           tbody.innerHTML = "";
-
           players.forEach(player => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td><input type="checkbox" class="player-checkbox" data-id="${player.id}"></td>
               <td>${player.name}</td>
-              <td>
-                 <input type="number" class="player-number" value="${player.number}" style="width: 60px; font-size: 18px; padding: 5px;">
-              </td>
+              <td><input type="number" class="player-number" value="${player.number}" style="width: 60px; font-size: 18px; padding: 5px;"></td>
             `;
             tbody.appendChild(tr);
           });
-
-          // Add click listeners to checkboxes
-          document.querySelectorAll(".player-checkbox").forEach(cb =>
-              cb.addEventListener("change", updateButtonState)
-          );
-      } catch (err) {
-          console.error(err);
-          alert("Chyba pri načítaní hráčov.");
-      }
+          document.querySelectorAll(".player-checkbox").forEach(cb => cb.addEventListener("change", updateButtonState));
+      } catch (err) { console.error(err); alert("Chyba pri načítaní hráčov."); }
     }
 
-    // 3. Save Roster and Continue
     continueBtn.addEventListener("click", () => {
         const selectedPlayers = [];
-
         document.querySelectorAll(".player-checkbox:checked").forEach(cb => {
             const row = cb.closest("tr");
             const pId = cb.getAttribute("data-id");
-            // Grab the number from the input box (in case they changed it)
             const pNumber = row.querySelector(".player-number").value;
-
-            selectedPlayers.push({
-                player_id: parseInt(pId),
-                number: parseInt(pNumber)
-            });
+            selectedPlayers.push({ player_id: parseInt(pId), number: parseInt(pNumber) });
         });
 
-        // Save to temporary memory
         localStorage.setItem("homeRoster", JSON.stringify(selectedPlayers));
 
-        // Go to next page
-        window.location.href = `attendance_away.html?home=${homeTeamId}&away=${awayTeamId}`;
+        // PASS MATCH_ID TO NEXT PAGE
+        window.location.href = `attendance_away.html?home=${homeTeamId}&away=${awayTeamId}&match_id=${matchId}`;
     });
 
     loadPlayers();
 </script>
-
 </body>
 </html>

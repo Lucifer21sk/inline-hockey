@@ -9,7 +9,6 @@
 
   <h1>HOSTIA</h1>
 
-  <!-- SCROLLABLE TABLE CONTAINER -->
   <div class="table-scroll">
     <table>
       <thead>
@@ -20,12 +19,10 @@
         </tr>
       </thead>
       <tbody id="playersBody">
-        <!-- players injected here -->
-      </tbody>
+        </tbody>
     </table>
   </div>
 
-  <!-- FIXED ACTION BUTTON -->
   <button id="continueBtn" class="action-btn" disabled>
     Pokračovať
   </button>
@@ -34,6 +31,7 @@
     const params = new URLSearchParams(window.location.search);
     const homeTeamId = params.get("home");
     const awayTeamId = params.get("away");
+    const matchId = params.get("match_id"); // <--- GET MATCH ID
 
     const tbody = document.getElementById("playersBody");
     const continueBtn = document.getElementById("continueBtn");
@@ -43,94 +41,72 @@
       continueBtn.disabled = checked.length < 5;
     }
 
-    // 1. Load Away Players (Editable Numbers)
     async function loadPlayers() {
       try {
-          const res = await fetch("https://Lucifer21sk.pythonanywhere.com/players/" + awayTeamId);
-          const players = await res.json();
-
+          const response = await fetch(`https://Lucifer21sk.pythonanywhere.com/players/${awayTeamId}`);
+          const players = await response.json();
           tbody.innerHTML = "";
-
           players.forEach(player => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td><input type="checkbox" class="player-checkbox" data-id="${player.id}"></td>
               <td>${player.name}</td>
-              <td>
-                 <input type="number" class="player-number" value="${player.number}" style="width: 60px; font-size: 18px; padding: 5px;">
-              </td>
+              <td><input type="number" class="player-number" value="${player.number}" style="width: 60px; font-size: 18px; padding: 5px;"></td>
             `;
             tbody.appendChild(tr);
           });
-
-          document.querySelectorAll(".player-checkbox").forEach(cb =>
-              cb.addEventListener("change", updateButtonState)
-          );
-      } catch (err) {
-          console.error(err);
-      }
+          document.querySelectorAll(".player-checkbox").forEach(cb => cb.addEventListener("change", updateButtonState));
+      } catch (err) { console.error(err); alert("Chyba pri načítaní hráčov."); }
     }
 
-    // 2. Create Match with FULL Roster Info
     continueBtn.addEventListener("click", async () => {
-        continueBtn.disabled = true;
-        continueBtn.textContent = "Zakladám zápas...";
-
-        // A. Get Away Roster from screen
-        const awayRoster = [];
+        const selectedPlayers = [];
         document.querySelectorAll(".player-checkbox:checked").forEach(cb => {
             const row = cb.closest("tr");
             const pId = cb.getAttribute("data-id");
             const pNumber = row.querySelector(".player-number").value;
-
-            awayRoster.push({
-                player_id: parseInt(pId),
-                number: parseInt(pNumber)
-            });
+            selectedPlayers.push({ player_id: parseInt(pId), number: parseInt(pNumber) });
         });
 
-        // B. Get Home Roster from Memory
         const homeRosterString = localStorage.getItem("homeRoster");
-        if (!homeRosterString) {
-            alert("Chyba: Stratila sa súpiska domácich! Vráťte sa späť.");
-            continueBtn.disabled = false;
-            return;
-        }
+        if (!homeRosterString) { alert("Chyba: Chýba domáca súpiska!"); return; }
         const homeRoster = JSON.parse(homeRosterString);
 
-        // C. Send to Server
+        // DECIDE: START EXISTING MATCH or CREATE NEW?
+        let apiUrl = "https://Lucifer21sk.pythonanywhere.com/matches/create"; // Default (Legacy)
+        let payload = {
+            home_team_id: homeTeamId,
+            away_team_id: awayTeamId,
+            home_roster: homeRoster,
+            away_roster: selectedPlayers
+        };
+
+        if (matchId) {
+            // NEW: Use the scheduled match ID
+            apiUrl = "https://Lucifer21sk.pythonanywhere.com/matches/start_scheduled";
+            payload.match_id = matchId;
+        }
+
         try {
-            const response = await fetch("https://Lucifer21sk.pythonanywhere.com/matches/create", {
+            const response = await fetch(apiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    home_team_id: homeTeamId,
-                    away_team_id: awayTeamId,
-                    home_roster: homeRoster,
-                    away_roster: awayRoster
-                })
+                body: JSON.stringify(payload)
             });
 
             const data = await response.json();
 
             if (data.status === "ok") {
-                // Clear memory
                 localStorage.removeItem("homeRoster");
-                // Start Match
+                // Redirect to Live Match
                 window.location.href = `live_match.html?match=${data.match_id}&home=${homeTeamId}&away=${awayTeamId}`;
             } else {
                 alert("Chyba pri vytváraní zápasu.");
-                continueBtn.disabled = false;
             }
-        } catch (err) {
-            console.error(err);
-            alert("Chyba siete.");
-            continueBtn.disabled = false;
-        }
+        } catch (err) { console.error(err); alert("Chyba siete."); }
     });
 
     loadPlayers();
 </script>
-
 </body>
 </html>
