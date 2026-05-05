@@ -39,7 +39,7 @@
     </div>
 
     <div class="phase-buttons center-phase-buttons">
-      <button id="btnOvertime" onclick="startOvertime()" disabled>Predĺženie</button>
+      <button id="btnOvertime" onclick="startOvertime()" >Predĺženie</button>
       <button id="btnShootout" onclick="startShootout()" style="display: none;">Trestné strieľania</button>
     </div>
 
@@ -146,6 +146,9 @@ window.onload = async () => {
     if (matchId) {
         await restoreMatchState();
     }
+    
+    // 3. Vynútiť kontrolu tlačidiel hneď po načítaní
+    updateButtonVisibility();
 };
 
 /* =========================
