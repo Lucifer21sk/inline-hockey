@@ -29,7 +29,7 @@
       <textarea id="notes"></textarea>
     </div>
 
-    <button class="post-save-btn" onclick="finishApp()">
+    <button id="saveBtn" class="post-save-btn" onclick="finishApp()">
       Uložiť
     </button>
 
@@ -39,11 +39,21 @@
 
 <script>
 async function finishApp() {
+  // 1. Nájdeme tlačidlo, zablokujeme ho a zmeníme text
+  const saveBtn = document.getElementById("saveBtn");
+  saveBtn.disabled = true;
+  saveBtn.innerText = "Ukladám...";
+  saveBtn.style.opacity = "0.7"; // Vizuálne ho trošku "zhasneme"
+
   const params = new URLSearchParams(window.location.search);
   const matchId = params.get("match");
 
   if (!matchId) {
     alert("Chýba ID zápasu");
+    // Ak je chyba, vrátime tlačidlo do pôvodného stavu
+    saveBtn.disabled = false;
+    saveBtn.innerText = "Uložiť";
+    saveBtn.style.opacity = "1";
     return;
   }
 
@@ -68,16 +78,20 @@ async function finishApp() {
       }
     );
 
-    // End of whole flow → back to start
+    // Koniec celého procesu → späť na začiatok
     window.location.href = "select_teams.html";
 
   } catch (err) {
     console.error("Saving match report failed", err);
-    alert("Nepodarilo sa uložiť zápis zápasu");
+    alert("Nepodarilo sa uložiť zápis zápasu. Skontrolujte pripojenie.");
+    
+    // 2. Ak to spadne (napríklad vypadol internet), tlačidlo opäť zapneme
+    saveBtn.disabled = false;
+    saveBtn.innerText = "Uložiť";
+    saveBtn.style.opacity = "1";
   }
 }
 </script>
 
 </body>
-
 </html>
