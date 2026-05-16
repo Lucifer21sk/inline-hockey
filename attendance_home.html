@@ -31,7 +31,7 @@
     const params = new URLSearchParams(window.location.search);
     const homeTeamId = params.get("home");
     const awayTeamId = params.get("away");
-    const matchId = params.get("match_id"); // <--- GET MATCH ID
+    const matchId = params.get("match_id"); 
 
     const tbody = document.getElementById("playersBody");
     const continueBtn = document.getElementById("continueBtn");
@@ -46,17 +46,32 @@
           const response = await fetch(`https://Lucifer21sk.pythonanywhere.com/players/${homeTeamId}`);
           const players = await response.json();
           tbody.innerHTML = "";
+          
           players.forEach(player => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td><input type="checkbox" class="player-checkbox" data-id="${player.id}"></td>
               <td>${player.name}</td>
-              <td><input type="number" class="player-number" value="${player.number}" style="width: 60px; font-size: 18px; padding: 5px;"></td>
+              <td><input type="number" class="player-number" value="${player.number}" style="width: 60px; font-size: 18px; padding: 5px; text-align: center;" disabled></td>
             `;
             tbody.appendChild(tr);
           });
-          document.querySelectorAll(".player-checkbox").forEach(cb => cb.addEventListener("change", updateButtonState));
-      } catch (err) { console.error(err); alert("Chyba pri načítaní hráčov."); }
+          
+          // TU JE ZMENA: Upravený Event Listener
+          document.querySelectorAll(".player-checkbox").forEach(cb => {
+              cb.addEventListener("change", function() {
+                  // Nájde políčko s číslom v rovnakom riadku a odomkne/zamkne ho podľa checkboxu
+                  const numberInput = this.closest("tr").querySelector(".player-number");
+                  numberInput.disabled = !this.checked;
+                  
+                  // Zároveň skontroluje, či je dosť hráčov na odomknutie tlačidla Pokračovať
+                  updateButtonState();
+              });
+          });
+      } catch (err) { 
+          console.error(err); 
+          alert("Chyba pri načítaní hráčov."); 
+      }
     }
 
     continueBtn.addEventListener("click", () => {
@@ -70,7 +85,6 @@
 
         localStorage.setItem("homeRoster", JSON.stringify(selectedPlayers));
 
-        // PASS MATCH_ID TO NEXT PAGE
         window.location.href = `attendance_away.html?home=${homeTeamId}&away=${awayTeamId}&match_id=${matchId}`;
     });
 

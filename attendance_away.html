@@ -31,7 +31,7 @@
     const params = new URLSearchParams(window.location.search);
     const homeTeamId = params.get("home");
     const awayTeamId = params.get("away");
-    const matchId = params.get("match_id"); // <--- GET MATCH ID
+    const matchId = params.get("match_id"); 
 
     const tbody = document.getElementById("playersBody");
     const continueBtn = document.getElementById("continueBtn");
@@ -46,17 +46,29 @@
           const response = await fetch(`https://Lucifer21sk.pythonanywhere.com/players/${awayTeamId}`);
           const players = await response.json();
           tbody.innerHTML = "";
+          
           players.forEach(player => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td><input type="checkbox" class="player-checkbox" data-id="${player.id}"></td>
               <td>${player.name}</td>
-              <td><input type="number" class="player-number" value="${player.number}" style="width: 60px; font-size: 18px; padding: 5px;"></td>
+              <td><input type="number" class="player-number" value="${player.number}" style="width: 60px; font-size: 18px; padding: 5px; text-align: center;" disabled></td>
             `;
             tbody.appendChild(tr);
           });
-          document.querySelectorAll(".player-checkbox").forEach(cb => cb.addEventListener("change", updateButtonState));
-      } catch (err) { console.error(err); alert("Chyba pri načítaní hráčov."); }
+          
+          // Upravený event listener pre odomykanie čísla dresu
+          document.querySelectorAll(".player-checkbox").forEach(cb => {
+              cb.addEventListener("change", function() {
+                  const numberInput = this.closest("tr").querySelector(".player-number");
+                  numberInput.disabled = !this.checked;
+                  updateButtonState();
+              });
+          });
+      } catch (err) { 
+          console.error(err); 
+          alert("Chyba pri načítaní hráčov."); 
+      }
     }
 
     continueBtn.addEventListener("click", async () => {
@@ -72,8 +84,7 @@
         if (!homeRosterString) { alert("Chyba: Chýba domáca súpiska!"); return; }
         const homeRoster = JSON.parse(homeRosterString);
 
-        // DECIDE: START EXISTING MATCH or CREATE NEW?
-        let apiUrl = "https://Lucifer21sk.pythonanywhere.com/matches/create"; // Default (Legacy)
+        let apiUrl = "https://Lucifer21sk.pythonanywhere.com/matches/create"; 
         let payload = {
             home_team_id: homeTeamId,
             away_team_id: awayTeamId,
@@ -82,7 +93,6 @@
         };
 
         if (matchId) {
-            // NEW: Use the scheduled match ID
             apiUrl = "https://Lucifer21sk.pythonanywhere.com/matches/start_scheduled";
             payload.match_id = matchId;
         }
@@ -98,7 +108,6 @@
 
             if (data.status === "ok") {
                 localStorage.removeItem("homeRoster");
-                // Redirect to Live Match
                 window.location.href = `live_match.html?match=${data.match_id}&home=${homeTeamId}&away=${awayTeamId}`;
             } else {
                 alert("Chyba pri vytváraní zápasu.");
