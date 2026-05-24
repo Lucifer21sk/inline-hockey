@@ -75,7 +75,6 @@
     <input id="goalTime" placeholder="Čas (mm:ss)" inputmode="numeric">
     <input placeholder="Strelec – číslo" id="goalScorer" inputmode="numeric" pattern="[0-9]*">
     <input placeholder="Asistencia 1" id="goalAssist1" inputmode="numeric" pattern="[0-9]*">
-    <input placeholder="Asistencia 2" id="goalAssist2" inputmode="numeric" pattern="[0-9]*">
 
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeModal()">Zrušiť</button>
@@ -389,7 +388,6 @@ function clearGoalModal() {
   document.getElementById("goalTime").value = "";
   document.getElementById("goalScorer").value = "";
   document.getElementById("goalAssist1").value = "";
-  document.getElementById("goalAssist2").value = "";
 }
 
 function clearPenaltyModal() {
@@ -420,7 +418,6 @@ async function confirmGoal() {
   const minute = document.getElementById("goalTime").value;
   const scorer = document.getElementById("goalScorer").value;
   const assist1 = document.getElementById("goalAssist1").value;
-  const assist2 = document.getElementById("goalAssist2").value;
 
   if (!minute || !scorer) {
     alert("Vyplň čas a strelca");
@@ -439,7 +436,7 @@ async function confirmGoal() {
     team_id: teamId,
     scorer_number: Number(scorer),
     assist1_number: assist1 ? Number(assist1) : null,
-    assist2_number: assist2 ? Number(assist2) : null,
+    assist2_number: null, // Pevne nastavené na null, server to takto bez problémov prijme
     minute: minute
   };
 
